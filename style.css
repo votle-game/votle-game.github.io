@@ -205,7 +205,7 @@ html.dark .icon-moon { display: block; }
   padding: 24px 26px;
   box-shadow: var(--shadow);
 }
-#hintsCard, #topicCard { grid-column: span 2; }
+#dailyCard, #topicCard { grid-column: span 2; }
 
 .card-title {
   font-family: var(--font-display);
@@ -920,6 +920,83 @@ html.dark .map-tooltip { background: var(--bg-elevated); color: var(--ink); bord
 .stats-table th { color: var(--ink-soft); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 .stats-table td.num, .stats-table th.num { text-align: right; font-family: var(--font-mono); }
 
+/* Charts */
+.chart-block { border: 1px solid var(--line); border-radius: var(--radius-m); padding: 16px; }
+.chart-block svg { width: 100%; height: auto; display: block; }
+.chart-axis-label { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-soft); }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+.chart-area { fill: var(--accent-soft); stroke: none; }
+.chart-dot { fill: var(--accent); }
+.chart-dot.lost { fill: var(--vote-no); }
+.chart-empty { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 30px; }
+
+/* History list */
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 12px 14px;
+}
+.history-result {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 13px; flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+.history-result.win { background: var(--vote-yes-bg); color: var(--vote-yes); }
+.history-result.loss { background: var(--vote-no-bg); color: var(--vote-no); }
+.history-info { flex: 1; min-width: 0; }
+.history-title {
+  font-weight: 700; font-size: 13.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.history-meta { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+.history-stats { text-align: right; font-family: var(--font-mono); font-size: 12.5px; flex-shrink: 0; }
+.history-stats .found { font-weight: 700; }
+.history-daily-tag {
+  display: inline-block; margin-left: 6px;
+  padding: 1px 7px; border-radius: 999px;
+  background: var(--accent-2-soft); color: var(--accent-2);
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.history-load-more { margin-top: 4px; }
+
+/* Achievements */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+.achievement-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.achievement-card.is-unlocked { border-color: var(--accent); background: var(--accent-soft); }
+.achievement-card.is-locked { opacity: 0.55; }
+.achievement-name { font-weight: 700; font-size: 14px; }
+.achievement-desc { font-size: 12.5px; color: var(--ink-soft); line-height: 1.5; }
+.achievement-status {
+  font-family: var(--font-mono); font-size: 10.5px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-top: 4px;
+  color: var(--ink-soft);
+}
+.achievement-card.is-unlocked .achievement-status { color: var(--accent); }
+
+/* Daily challenge card */
+.daily-status-line {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 10px 0;
+}
+.daily-status-line.played {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .toast {
   position: fixed;
   bottom: 24px; left: 50%;
@@ -941,7 +1018,7 @@ html.dark .map-tooltip { background: var(--bg-elevated); color: var(--ink); bord
 
 @media (max-width: 880px) {
   .setup-grid { grid-template-columns: 1fr; }
-  #hintsCard, #topicCard { grid-column: span 1; }
+  #dailyCard, #topicCard { grid-column: span 1; }
   #gameScreen { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
   .ballot { border-right: none; border-bottom: 1px solid var(--line); max-height: 44vh; }
   .map-stage { height: 60vh; }

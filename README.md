@@ -75,10 +75,16 @@ Re-deploy the frontend (push the change) and accounts/stats should work.
 |-------------|--------|------|---------------|
 | `/register` | POST   | –    | `{ username, password }` -> `{ token, username }` |
 | `/login`    | POST   | –    | `{ username, password }` -> `{ token, username }` |
-| `/result`   | POST   | Bearer token | Game result payload -> `{ ok: true }` |
-| `/stats`    | GET    | Bearer token | -> aggregated stats (games played, win rate, streaks, breakdowns by difficulty/era/topic) |
+| `/result`   | POST   | Bearer token | Game result payload (now also accepts `dailyId`) -> `{ ok: true }` |
+| `/stats`    | GET    | Bearer token | -> aggregated stats, achievement counters, daily streak, and a recent-games timeline for charts |
+| `/history`  | GET    | Bearer token | `?limit=&offset=` -> paginated list of past games |
+| `/daily-status` | GET | Bearer token | `?id=YYYY-MM-DD` -> whether that day's challenge has been played |
 
 Passwords are hashed with PBKDF2-SHA256 (100,000 iterations) before storage. Session tokens are random 256-bit values stored in KV with a 90-day TTL.
+
+### Upgrading an existing database
+
+If you already created the `results` table before the daily-challenge feature was added, run `worker/migration_001_daily.sql` once in the D1 console to add the new `daily_id` column. New deployments using `schema.sql` already include it.
 
 ## Updating data
 

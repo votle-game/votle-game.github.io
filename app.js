@@ -135,15 +135,6 @@ function initSetupScreen() {
     });
   });
 
-  // Hints — multi-select toggle row
-  document.querySelectorAll('[data-group="hints"]').forEach(row => {
-    row.addEventListener('click', e => {
-      const btn = e.target.closest('.choice');
-      if (!btn) return;
-      toggleHint(btn.dataset.value);
-    });
-  });
-
   document.getElementById('startBtn').addEventListener('click', startSession);
 }
 
@@ -160,11 +151,6 @@ function toggleHint(val) {
 }
 
 function syncHintControls() {
-  document.querySelectorAll('[data-group="hints"] .choice').forEach(btn => {
-    const level = state.hints.get(btn.dataset.value) || 0;
-    btn.classList.toggle('is-active', level > 0);
-    btn.classList.toggle('is-maxed', level >= 2);
-  });
   document.querySelectorAll('#hintsToggleRow .hint-chip').forEach(chip => {
     const level = state.hints.get(chip.dataset.value) || 0;
     chip.classList.toggle('is-active', level > 0);
@@ -281,11 +267,39 @@ function buildSession(resolution) {
   };
 }
 
-function startSession() {
+// Simple deterministic string hash -> 32-bit int, for seeding the daily pick.
+function hashString(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h);
+}
+
+function todayId() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+}
+
+// Pick today's daily resolution — same for everyone, deterministic by date.
+// Restricted to resolutions with 2-6 "no" votes for a fair, bounded challenge.
+function pickDailyResolution() {
+  const pool = state.resolutions.filter(r => {
+    const noCount = Object.values(r.votes).filter(v => v === VOTE.NO).length;
+    return noCount >= 2 && noCount <= 6;
+  });
+  if (!pool.length) return null;
+  const idx = hashString('votle-daily-' + todayId()) % pool.length;
+  return pool[idx];
+}
+
+function startSession(options) {
   if (!state.resolutions.length) return;
-  const resolution = pickResolution();
+  const opts = options || {};
+  const resolution = opts.resolution || pickResolution();
   state.session = buildSession(resolution);
   state.session.startTime = Date.now();
+  state.session.dailyId = opts.dailyId || null;
+  state.hints = new Map(); // hints reset each session
 
   document.getElementById('setupScreen').hidden = true;
   document.getElementById('gameScreen').hidden = false;
@@ -936,6 +950,7 @@ function backToSetup() {
   document.getElementById('resultsOverlay').hidden = true;
   state.session = null;
   updatePoolCount();
+  refreshDailyCard();
 }
 
 // ============================================================
@@ -1010,6 +1025,7 @@ function initAuth() {
       updateAccountUI();
       closeAuth();
       toast(state.authMode === 'login' ? `Welcome back, ${username}.` : `Account created. Welcome, ${username}.`);
+      refreshDailyCard();
     } catch (err) {
       errEl.textContent = 'Could not reach the server. Try again later.';
       errEl.hidden = false;
@@ -1035,6 +1051,7 @@ function signOut() {
   localStorage.removeItem('votle-username');
   updateAccountUI();
   toast('Signed out.');
+  refreshDailyCard();
 }
 
 function updateAccountUI() {
@@ -1047,7 +1064,7 @@ async function submitResult() {
   if (!state.user) return;
   const s = state.session;
   const payload = {
-    resolutionId: s.resolution.id,
+    resolutionId: String(s.resolution.id),
     won: s.status === 'won',
     accuracy: s.guessedCorrect.size + s.guessedWrong.length > 0
       ? Math.round((s.guessedCorrect.size / (s.guessedCorrect.size + s.guessedWrong.length)) * 100)
@@ -1056,11 +1073,12 @@ async function submitResult() {
     guessesUsed: s.guessesUsed,
     maxGuesses: s.maxGuesses,
     found: s.guessedCorrect.size,
-    total: s.noCountries.size,
+    total: s.noClaims.length,
     difficulty: setup.difficulty.value,
     era: setup.era,
     topic: setup.topic,
     hints: [...state.hints],
+    dailyId: s.dailyId || undefined,
     date: new Date().toISOString(),
   };
   try {
@@ -1146,7 +1164,19 @@ function renderStats(data) {
       <div class="result-stat"><span class="result-stat-value">${data.totalFound}</span><span class="result-stat-label">Dissenters Found</span></div>
       <div class="result-stat"><span class="result-stat-value">${data.totalGuesses}</span><span class="result-stat-label">Total Guesses</span></div>
     </div>
+
+    <div class="stats-headline">
+      <div class="result-stat"><span class="result-stat-value">${data.dailyStreak || 0}</span><span class="result-stat-label">Daily Streak</span></div>
+      <div class="result-stat"><span class="result-stat-value">${data.dailyPlayed || 0}</span><span class="result-stat-label">Dailies Played</span></div>
+      <div class="result-stat"><span class="result-stat-value">${data.noHintWins || 0}</span><span class="result-stat-label">Wins w/o Hints</span></div>
+      <div class="result-stat"><span class="result-stat-value">${data.flawlessWins || 0}</span><span class="result-stat-label">Flawless Wins</span></div>
+    </div>
   `;
+
+  if (data.timeline && data.timeline.length >= 2) {
+    html += `<div class="stats-section"><h3>Accuracy Over Time</h3>${renderAccuracyChart(data.timeline)}</div>`;
+    html += `<div class="stats-section"><h3>Dissenters Found vs Total</h3>${renderFoundChart(data.timeline)}</div>`;
+  }
 
   if (data.byDifficulty && data.byDifficulty.length) {
     html += `<div class="stats-section"><h3>By Difficulty</h3>${renderBreakdownTable(data.byDifficulty, 'difficulty')}</div>`;
@@ -1159,6 +1189,69 @@ function renderStats(data) {
   }
 
   content.innerHTML = html;
+}
+
+// Simple SVG line chart of accuracy% across the most recent games.
+function renderAccuracyChart(timeline) {
+  if (!timeline.length) return '<p class="chart-empty">No data yet.</p>';
+  const W = 600, H = 180, PAD = 28;
+  const n = timeline.length;
+  const xStep = n > 1 ? (W - PAD * 2) / (n - 1) : 0;
+  const points = timeline.map((g, i) => {
+    const x = PAD + i * xStep;
+    const y = PAD + (1 - g.accuracy / 100) * (H - PAD * 2);
+    return { x, y, won: g.won, accuracy: g.accuracy };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const areaPath = linePath + ` L${points[points.length - 1].x.toFixed(1)},${H - PAD} L${points[0].x.toFixed(1)},${H - PAD} Z`;
+
+  const dots = points.map(p =>
+    `<circle class="chart-dot${p.won ? '' : ' lost'}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5"><title>${p.accuracy}%</title></circle>`
+  ).join('');
+
+  return `
+    <div class="chart-block">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <line x1="${PAD}" y1="${PAD}" x2="${PAD}" y2="${H - PAD}" stroke="var(--line)" stroke-width="1"/>
+        <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="var(--line)" stroke-width="1"/>
+        <text class="chart-axis-label" x="4" y="${PAD + 4}">100%</text>
+        <text class="chart-axis-label" x="4" y="${H - PAD}">0%</text>
+        <path class="chart-area" d="${areaPath}"/>
+        <path class="chart-line" d="${linePath}"/>
+        ${dots}
+      </svg>
+    </div>
+  `;
+}
+
+// Bar chart of dissenters found vs total per game (most recent games).
+function renderFoundChart(timeline) {
+  if (!timeline.length) return '<p class="chart-empty">No data yet.</p>';
+  const W = 600, H = 180, PAD = 28;
+  const n = timeline.length;
+  const slot = (W - PAD * 2) / n;
+  const barW = Math.max(2, Math.min(14, slot * 0.6));
+  const maxTotal = Math.max(...timeline.map(g => g.total), 1);
+
+  let bars = '';
+  timeline.forEach((g, i) => {
+    const cx = PAD + slot * i + slot / 2;
+    const totalH = (g.total / maxTotal) * (H - PAD * 2);
+    const foundH = (g.found / maxTotal) * (H - PAD * 2);
+    const baseY = H - PAD;
+    bars += `<rect x="${(cx - barW / 2).toFixed(1)}" y="${(baseY - totalH).toFixed(1)}" width="${barW.toFixed(1)}" height="${totalH.toFixed(1)}" fill="var(--line)"/>`;
+    bars += `<rect x="${(cx - barW / 2).toFixed(1)}" y="${(baseY - foundH).toFixed(1)}" width="${barW.toFixed(1)}" height="${foundH.toFixed(1)}" fill="${g.won ? 'var(--accent)' : 'var(--vote-no)'}"><title>${g.found} / ${g.total}</title></rect>`;
+  });
+
+  return `
+    <div class="chart-block">
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <line x1="${PAD}" y1="${H - PAD}" x2="${W - PAD}" y2="${H - PAD}" stroke="var(--line)" stroke-width="1"/>
+        ${bars}
+      </svg>
+    </div>
+  `;
 }
 
 function renderBreakdownTable(rows, keyName) {
@@ -1183,8 +1276,315 @@ function renderBreakdownTable(rows, keyName) {
 }
 
 // ============================================================
-// BOOTSTRAP
+// DAILY CHALLENGE
 // ============================================================
+
+function initDailyChallenge() {
+  document.getElementById('dailyBtn').addEventListener('click', async () => {
+    const resolution = pickDailyResolution();
+    if (!resolution) return;
+    const dailyId = todayId();
+
+    if (state.user) {
+      // Double-check with the server in case of multiple devices/tabs.
+      try {
+        const resp = await fetch(`${VOTLE_CONFIG.WORKER_URL}/daily-status?id=${dailyId}`, {
+          headers: { 'Authorization': 'Bearer ' + state.user.token },
+        });
+        const data = await resp.json();
+        if (data.played) {
+          toast("You've already played today's challenge — come back tomorrow.");
+          return;
+        }
+      } catch (err) {
+        // Non-fatal — fall through and let them play; server will just record another attempt.
+      }
+    }
+
+    startSession({ resolution, dailyId });
+  });
+}
+
+async function refreshDailyCard() {
+  const statusEl = document.getElementById('dailyStatus');
+  const btn = document.getElementById('dailyBtn');
+  statusEl.innerHTML = '';
+  btn.disabled = false;
+  btn.textContent = "Play Today's Challenge";
+
+  if (!state.user) return;
+
+  try {
+    const resp = await fetch(`${VOTLE_CONFIG.WORKER_URL}/daily-status?id=${todayId()}`, {
+      headers: { 'Authorization': 'Bearer ' + state.user.token },
+    });
+    const data = await resp.json();
+    if (!resp.ok) return;
+    if (data.played) {
+      const verb = data.won ? 'Solved' : 'Attempted';
+      statusEl.innerHTML = `<p class="daily-status-line played">${verb} today — ${data.found} / ${data.total} found, ${data.accuracy}% accuracy.</p>`;
+      btn.disabled = true;
+      btn.textContent = 'Completed — Come Back Tomorrow';
+    }
+  } catch (err) {
+    // Non-fatal
+  }
+}
+
+// ============================================================
+// GAME HISTORY
+// ============================================================
+
+function initHistory() {
+  document.getElementById('historyBtn').addEventListener('click', openHistory);
+  document.getElementById('historyClose').addEventListener('click', () => {
+    document.getElementById('historyOverlay').hidden = true;
+  });
+  document.getElementById('historyOverlay').addEventListener('click', e => {
+    if (e.target.id === 'historyOverlay') document.getElementById('historyOverlay').hidden = true;
+  });
+}
+
+let historyOffset = 0;
+const HISTORY_PAGE_SIZE = 20;
+
+async function openHistory() {
+  const overlay = document.getElementById('historyOverlay');
+  const signedOut = document.getElementById('historySignedOut');
+  const content = document.getElementById('historyContent');
+
+  if (!state.user) {
+    signedOut.hidden = false;
+    content.hidden = true;
+    overlay.hidden = false;
+    return;
+  }
+
+  signedOut.hidden = true;
+  content.hidden = false;
+  content.innerHTML = '<p class="stats-signed-out">Loading your history…</p>';
+  overlay.hidden = false;
+  historyOffset = 0;
+
+  await loadHistoryPage(true);
+}
+
+async function loadHistoryPage(reset) {
+  const content = document.getElementById('historyContent');
+  try {
+    const resp = await fetch(`${VOTLE_CONFIG.WORKER_URL}/history?limit=${HISTORY_PAGE_SIZE}&offset=${historyOffset}`, {
+      headers: { 'Authorization': 'Bearer ' + state.user.token },
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Failed to load history');
+
+    if (reset) content.innerHTML = '<div class="history-list" id="historyList"></div>';
+    const list = document.getElementById('historyList');
+
+    if (!data.items.length && reset) {
+      content.innerHTML = '<p class="stats-signed-out">No games played yet — your history will show up here once you finish a session.</p>';
+      return;
+    }
+
+    data.items.forEach(item => list.appendChild(buildHistoryItem(item)));
+
+    historyOffset += data.items.length;
+
+    const existingMore = content.querySelector('.history-load-more');
+    if (existingMore) existingMore.remove();
+    if (historyOffset < data.total) {
+      const more = document.createElement('button');
+      more.className = 'btn-secondary btn-block history-load-more';
+      more.textContent = 'Load More';
+      more.addEventListener('click', () => loadHistoryPage(false));
+      content.appendChild(more);
+    }
+  } catch (err) {
+    content.innerHTML = `<p class="stats-signed-out">Could not load history. ${err.message || ''}</p>`;
+  }
+}
+
+const ERA_LABELS = { 'cold-war': 'Cold War', 'modern': 'Modern Era', 'any': 'Any Era' };
+const DIFFICULTY_LABELS = { 'generous': 'Generous', 'standard': 'Standard', 'strict': 'Strict' };
+
+function buildHistoryItem(item) {
+  const div = document.createElement('div');
+  div.className = 'history-item';
+  const dailyTag = item.dailyId ? `<span class="history-daily-tag">Daily</span>` : '';
+  const date = new Date(item.playedAt || item.createdAt);
+  const dateStr = isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  div.innerHTML = `
+    <div class="history-result ${item.won ? 'win' : 'loss'}">${item.won ? 'W' : 'L'}</div>
+    <div class="history-info">
+      <div class="history-title">Resolution #${item.resolutionId}${dailyTag}</div>
+      <div class="history-meta">${dateStr} · ${DIFFICULTY_LABELS[item.difficulty] || item.difficulty} · ${ERA_LABELS[item.era] || item.era}</div>
+    </div>
+    <div class="history-stats">
+      <div class="found">${item.found} / ${item.total}</div>
+      <div>${item.accuracy}% · ${fmtTime(item.timeSeconds)}</div>
+    </div>
+  `;
+  return div;
+}
+
+// ============================================================
+// ACHIEVEMENTS
+// ============================================================
+
+const ACHIEVEMENTS = [
+  {
+    id: 'first-win',
+    name: 'First Resolution',
+    desc: 'Win your first session.',
+    check: s => s.wins >= 1,
+  },
+  {
+    id: 'ten-wins',
+    name: 'Seasoned Delegate',
+    desc: 'Win 10 sessions.',
+    check: s => s.wins >= 10,
+  },
+  {
+    id: 'fifty-wins',
+    name: 'Veteran Diplomat',
+    desc: 'Win 50 sessions.',
+    check: s => s.wins >= 50,
+  },
+  {
+    id: 'streak-3',
+    name: 'On a Roll',
+    desc: 'Win 3 sessions in a row.',
+    check: s => s.bestStreak >= 3,
+  },
+  {
+    id: 'streak-7',
+    name: 'Week of Consensus',
+    desc: 'Win 7 sessions in a row.',
+    check: s => s.bestStreak >= 7,
+  },
+  {
+    id: 'no-hints-win',
+    name: 'Unaided Insight',
+    desc: 'Win a session without using any hints.',
+    check: s => s.noHintWins >= 1,
+  },
+  {
+    id: 'flawless-win',
+    name: 'Flawless Vote',
+    desc: 'Win a session with no incorrect guesses.',
+    check: s => s.flawlessWins >= 1,
+  },
+  {
+    id: 'perfect-accuracy-5',
+    name: 'Sharp Eye',
+    desc: 'Achieve 100% accuracy in 5 different sessions.',
+    check: s => s.perfectAccuracyWins >= 5,
+  },
+  {
+    id: 'fast-win',
+    name: 'Speed Reader',
+    desc: 'Win a session in under a minute.',
+    check: s => s.fastWins >= 1,
+  },
+  {
+    id: 'big-resolution',
+    name: 'Major Dissent',
+    desc: 'Win a session with 8 or more "no" votes to find.',
+    check: s => s.bigWins >= 1,
+  },
+  {
+    id: 'daily-streak-3',
+    name: 'Daily Habit',
+    desc: 'Complete the daily challenge 3 days in a row.',
+    check: s => s.dailyStreak >= 3,
+  },
+  {
+    id: 'daily-streak-7',
+    name: 'Weekly Regular',
+    desc: 'Complete the daily challenge 7 days in a row.',
+    check: s => s.dailyStreak >= 7,
+  },
+  {
+    id: 'daily-30',
+    name: 'Calendar Filled',
+    desc: 'Complete 30 daily challenges in total.',
+    check: s => s.dailyPlayed >= 30,
+  },
+  {
+    id: 'centurion',
+    name: 'Centurion',
+    desc: 'Play 100 sessions in total.',
+    check: s => s.gamesPlayed >= 100,
+  },
+];
+
+function initAchievements() {
+  document.getElementById('achievementsBtn').addEventListener('click', openAchievements);
+  document.getElementById('achievementsClose').addEventListener('click', () => {
+    document.getElementById('achievementsOverlay').hidden = true;
+  });
+  document.getElementById('achievementsOverlay').addEventListener('click', e => {
+    if (e.target.id === 'achievementsOverlay') document.getElementById('achievementsOverlay').hidden = true;
+  });
+}
+
+async function openAchievements() {
+  const overlay = document.getElementById('achievementsOverlay');
+  const signedOut = document.getElementById('achievementsSignedOut');
+  const content = document.getElementById('achievementsContent');
+
+  if (!state.user) {
+    signedOut.hidden = false;
+    content.hidden = true;
+    overlay.hidden = false;
+    return;
+  }
+
+  signedOut.hidden = true;
+  content.hidden = false;
+  content.innerHTML = '<p class="stats-signed-out">Loading achievements…</p>';
+  overlay.hidden = false;
+
+  try {
+    const resp = await fetch(`${VOTLE_CONFIG.WORKER_URL}/stats`, {
+      headers: { 'Authorization': 'Bearer ' + state.user.token },
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Failed to load achievements');
+    renderAchievements(data);
+  } catch (err) {
+    content.innerHTML = `<p class="stats-signed-out">Could not load achievements. ${err.message || ''}</p>`;
+  }
+}
+
+function renderAchievements(data) {
+  const content = document.getElementById('achievementsContent');
+  const stats = data.gamesPlayed ? data : {
+    gamesPlayed: 0, wins: 0, bestStreak: 0, noHintWins: 0, flawlessWins: 0,
+    perfectAccuracyWins: 0, fastWins: 0, bigWins: 0, dailyStreak: 0, dailyPlayed: 0,
+  };
+
+  const unlocked = ACHIEVEMENTS.filter(a => a.check(stats));
+  const locked = ACHIEVEMENTS.filter(a => !a.check(stats));
+
+  let html = `<p class="results-recap-meta">${unlocked.length} / ${ACHIEVEMENTS.length} unlocked</p>`;
+  html += '<div class="achievements-grid">';
+  [...unlocked, ...locked].forEach(a => {
+    const isUnlocked = a.check(stats);
+    html += `
+      <div class="achievement-card ${isUnlocked ? 'is-unlocked' : 'is-locked'}">
+        <span class="achievement-name">${a.name}</span>
+        <span class="achievement-desc">${a.desc}</span>
+        <span class="achievement-status">${isUnlocked ? 'Unlocked' : 'Locked'}</span>
+      </div>
+    `;
+  });
+  html += '</div>';
+
+  content.innerHTML = html;
+}
+
+
 
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
@@ -1195,6 +1595,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSetupScreen();
   initInGameHints();
   initCountrySearch();
+
+  initHistory();
+  initAchievements();
+  initDailyChallenge();
 
   document.getElementById('brandBtn').addEventListener('click', () => {
     if (state.session && state.session.status === 'playing') {
@@ -1207,6 +1611,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     await loadData();
     updatePoolCount();
+    refreshDailyCard();
   } catch (err) {
     document.getElementById('poolCount').textContent = 'Could not load the resolution archive. Please refresh.';
     console.error(err);

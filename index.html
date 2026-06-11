@@ -20,6 +20,12 @@
     </button>
   </div>
   <div class="topbar-right">
+    <button class="icon-btn" id="historyBtn" title="Game History" aria-label="Game History">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7M3 12V5M3 12h7"/><path d="M12 8v4l3 2"/></svg>
+    </button>
+    <button class="icon-btn" id="achievementsBtn" title="Achievements" aria-label="Achievements">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5L7 22l5-3 5 3-1.5-9.5"/></svg>
+    </button>
     <button class="icon-btn" id="statsBtn" title="Statistics" aria-label="Statistics">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 19V10M12 19V5M19 19v-7"/></svg>
     </button>
@@ -114,24 +120,12 @@
         </div>
       </section>
 
-      <!-- Hints -->
-      <section class="setup-card" id="hintsCard">
-        <h2 class="card-title"><span class="card-eyebrow">04</span>Hints</h2>
-        <p class="card-desc">Reveal background info on the votes against. More hints make it easier to track down the dissenters.</p>
-        <div class="choice-row choice-row-toggle" data-group="hints">
-          <button class="choice toggle" data-value="geography">
-            <span class="choice-name">Geography</span>
-            <span class="choice-meta">Region of each &quot;no&quot; vote</span>
-          </button>
-          <button class="choice toggle" data-value="religion">
-            <span class="choice-name">Religion</span>
-            <span class="choice-meta">Majority faith</span>
-          </button>
-          <button class="choice toggle" data-value="language">
-            <span class="choice-name">Language</span>
-            <span class="choice-meta">Primary language</span>
-          </button>
-        </div>
+      <!-- Daily Challenge -->
+      <section class="setup-card" id="dailyCard">
+        <h2 class="card-title"><span class="card-eyebrow">04</span>Daily Challenge</h2>
+        <p class="card-desc" id="dailyDesc">Everyone gets the same resolution today. One attempt — come back tomorrow for the next one.</p>
+        <div id="dailyStatus"></div>
+        <button class="btn-secondary btn-block" id="dailyBtn">Play Today's Challenge</button>
       </section>
 
     </div>
@@ -312,6 +306,38 @@
     <div class="stats-body" id="statsBody">
       <p class="stats-signed-out" id="statsSignedOut">Sign in to track your stats across sessions — accuracy, streaks, fastest times, and more.</p>
       <div class="stats-content" id="statsContent" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HISTORY OVERLAY ============ -->
+<div class="overlay" id="historyOverlay" hidden>
+  <div class="stats-card">
+    <div class="stats-head">
+      <h2>Game History</h2>
+      <button class="auth-close" id="historyClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="stats-body" id="historyBody">
+      <p class="stats-signed-out" id="historySignedOut">Sign in to keep a record of every resolution you've played.</p>
+      <div class="stats-content" id="historyContent" hidden></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ACHIEVEMENTS OVERLAY ============ -->
+<div class="overlay" id="achievementsOverlay" hidden>
+  <div class="stats-card">
+    <div class="stats-head">
+      <h2>Achievements</h2>
+      <button class="auth-close" id="achievementsClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="stats-body" id="achievementsBody">
+      <p class="stats-signed-out" id="achievementsSignedOut">Sign in to unlock and track achievements.</p>
+      <div class="stats-content" id="achievementsContent" hidden></div>
     </div>
   </div>
 </div>
