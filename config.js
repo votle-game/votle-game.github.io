@@ -3,4 +3,5 @@
 const VOTLE_CONFIG = {
   WORKER_URL: 'https://votle.lucas-alexander-pilu.workers.dev',
   DATA_BASE: 'data',
+  SITE_URL: 'https://votle-game.github.io',
 };

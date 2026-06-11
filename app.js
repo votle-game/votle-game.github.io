@@ -1,5 +1,5 @@
 // ============================================================
-// VOTLE — Main Application
+// VOTLE – Main Application
 // ============================================================
 
 const VOTE = { NO: 0, YES: 1, ABSTAIN: 2, ABSENT: 3 };
@@ -8,7 +8,7 @@ const VOTE_SYMBOL = { 0: '−', 1: '+', 2: '×', 3: '•' };
 
 // Historical entities that voted in the UN but no longer exist as map shapes.
 // Guessing ANY of their listed successor states counts as guessing the
-// historical entity, and vice versa — guessing the historical code (if it
+// historical entity, and vice versa – guessing the historical code (if it
 // somehow appears as a "no" voter) is satisfied by any successor.
 const SUCCESSOR_MAP = {
   YU: ['RS', 'ME', 'HR', 'SI', 'MK', 'BA'], // Yugoslavia / Serbia & Montenegro -> ex-Yugoslav states
@@ -25,7 +25,7 @@ const state = {
   theme: 'light',
   user: null,             // {username, token}
   authMode: 'login',
-  hints: new Map(), // category -> level (1 = summary, 2 = detailed)
+  hints: new Set(), // category names with hints enabled (can't be disabled once on)
 
   // game session
   session: null,
@@ -74,7 +74,7 @@ async function loadData() {
   state.countries.forEach(c => state.countryById[c.id] = c);
 
   // Some map geometries share an ISO code with a separate territory (e.g. Australia /
-  // Ashmore and Cartier Islands both use "AU") — dedupe by id for search/autocomplete.
+  // Ashmore and Cartier Islands both use "AU") – dedupe by id for search/autocomplete.
   const seen = new Set();
   state.searchableCountries = state.countries.filter(c => {
     if (seen.has(c.id)) return false;
@@ -83,7 +83,7 @@ async function loadData() {
   });
 
   document.getElementById('poolCount').textContent =
-    `${state.resolutions.length.toLocaleString()} resolutions in the archive — 1946 to 2019.`;
+    `${state.resolutions.length.toLocaleString()} resolutions in the archive – 1946 to 2019.`;
 }
 
 // ---------- Helpers ----------
@@ -94,7 +94,7 @@ function fmtTime(totalSeconds) {
 }
 
 function flagUrl(alpha2) {
-  // flagcdn.com — free, no auth, ISO 3166-1 alpha-2 (lowercase).
+  // flagcdn.com – free, no auth, ISO 3166-1 alpha-2 (lowercase).
   // w40 gives a properly proportioned flag (not cropped/distorted at the edges).
   const code = alpha2.toLowerCase();
   return `https://flagcdn.com/w40/${code}.png`;
@@ -116,14 +116,18 @@ const setup = {
 };
 
 function initSetupScreen() {
-  // Difficulty / Era / Topic — single-select rows
+  // Difficulty / Era / Topic – single-select rows
   document.querySelectorAll('[data-group="difficulty"], [data-group="era"], [data-group="topic"]').forEach(row => {
     row.addEventListener('click', e => {
       const btn = e.target.closest('.choice');
       if (!btn) return;
-      row.querySelectorAll('.choice').forEach(b => b.classList.remove('is-active'));
-      btn.classList.add('is-active');
       const group = row.dataset.group;
+      // Topic is split across multiple rows – clear active state in all of them.
+      const rows = group === 'topic'
+        ? document.querySelectorAll('[data-group="topic"]')
+        : [row];
+      rows.forEach(r => r.querySelectorAll('.choice').forEach(b => b.classList.remove('is-active')));
+      btn.classList.add('is-active');
       if (group === 'difficulty') {
         setup.difficulty = { value: btn.dataset.value, mult: parseFloat(btn.dataset.mult) };
       } else if (group === 'era') {
@@ -136,14 +140,26 @@ function initSetupScreen() {
   });
 
   document.getElementById('startBtn').addEventListener('click', startSession);
+
+  // Settings overlay
+  document.getElementById('settingsBtn').addEventListener('click', () => {
+    document.getElementById('settingsOverlay').hidden = false;
+  });
+  document.getElementById('settingsClose').addEventListener('click', () => {
+    document.getElementById('settingsOverlay').hidden = true;
+  });
+  document.getElementById('settingsOverlay').addEventListener('click', e => {
+    if (e.target.id === 'settingsOverlay') document.getElementById('settingsOverlay').hidden = true;
+  });
 }
 
 // Hints escalate: off -> level 1 (summary) -> level 2 (detailed). Once enabled,
-// a hint can't be turned back off — pressing again upgrades it to a better hint.
+// a hint can't be turned back off – pressing again upgrades it to a better hint.
+// Hints can be turned on but not back off – this keeps the challenge fair
+// for everyone (no toggling a hint on briefly then off to "peek").
 function toggleHint(val) {
-  const current = state.hints.get(val) || 0;
-  const next = current >= 2 ? 2 : current + 1;
-  state.hints.set(val, next);
+  if (state.hints.has(val)) return; // already on, nothing to do
+  state.hints.add(val);
   syncHintControls();
   if (state.session && state.session.status === 'playing') {
     renderHints();
@@ -152,13 +168,9 @@ function toggleHint(val) {
 
 function syncHintControls() {
   document.querySelectorAll('#hintsToggleRow .hint-chip').forEach(chip => {
-    const level = state.hints.get(chip.dataset.value) || 0;
-    chip.classList.toggle('is-active', level > 0);
-    chip.classList.toggle('is-maxed', level >= 2);
-    const base = chip.dataset.label;
-    if (level === 0) chip.textContent = base;
-    else if (level === 1) chip.textContent = `${base}: On (tap for more detail)`;
-    else chip.textContent = `${base}: Detailed`;
+    const on = state.hints.has(chip.dataset.value);
+    chip.classList.toggle('is-active', on);
+    chip.textContent = on ? `${chip.dataset.label}: On` : chip.dataset.label;
   });
 }
 
@@ -203,7 +215,7 @@ function pickResolution() {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function buildSession(resolution) {
+function buildSession(resolution, difficultyMultOverride) {
   const allCodes = Object.keys(state.countryMeta);
   const votes = resolution.votes;
 
@@ -224,7 +236,7 @@ function buildSession(resolution) {
   // voter is its own claim, satisfiable only by clicking that country.
   // A historical entity (e.g. Yugoslavia, "YU") that no longer has a map
   // shape becomes a claim satisfiable by clicking ANY of its modern
-  // successor states — and vice versa, clicking a successor state resolves
+  // successor states – and vice versa, clicking a successor state resolves
   // the historical claim it descends from.
   const noClaims = noCountries.map(code => {
     const successors = SUCCESSOR_MAP[code];
@@ -244,7 +256,8 @@ function buildSession(resolution) {
   });
 
   const noCount = noClaims.length;
-  const maxGuesses = Math.max(noCount, Math.ceil(noCount * setup.difficulty.mult));
+  const mult = difficultyMultOverride != null ? difficultyMultOverride : setup.difficulty.mult;
+  const maxGuesses = Math.max(noCount, Math.ceil(noCount * mult));
 
   return {
     resolution,
@@ -280,7 +293,7 @@ function todayId() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
 }
 
-// Pick today's daily resolution — same for everyone, deterministic by date.
+// Pick today's daily resolution – same for everyone, deterministic by date.
 // Restricted to resolutions with 2-6 "no" votes for a fair, bounded challenge.
 function pickDailyResolution() {
   const pool = state.resolutions.filter(r => {
@@ -295,11 +308,14 @@ function pickDailyResolution() {
 function startSession(options) {
   if (!state.resolutions.length) return;
   const opts = options || {};
+  const isDaily = !!opts.dailyId;
   const resolution = opts.resolution || pickResolution();
-  state.session = buildSession(resolution);
+  // Daily challenge always uses standard difficulty, regardless of the
+  // player's current settings.
+  state.session = buildSession(resolution, isDaily ? 1.5 : null);
   state.session.startTime = Date.now();
   state.session.dailyId = opts.dailyId || null;
-  state.hints = new Map(); // hints reset each session
+  state.hints = new Set(); // hints reset each session
 
   document.getElementById('setupScreen').hidden = true;
   document.getElementById('gameScreen').hidden = false;
@@ -322,6 +338,9 @@ function endSession(won) {
   updateHud();
   showResults();
   submitResult();
+  if (s.dailyId) {
+    localStorage.setItem('votle-daily-played', s.dailyId);
+  }
 }
 
 // ---------- Timer ----------
@@ -343,7 +362,7 @@ function stopTimer() {
 function updateHud() {
   const s = state.session;
   document.getElementById('timer').textContent = fmtTime(s.elapsed);
-  document.getElementById('guessesLeft').textContent = Math.max(0, s.maxGuesses - s.guessesUsed);
+  document.getElementById('guessesLeft').textContent = s.maxGuesses - s.guessesUsed;
 }
 
 // ============================================================
@@ -355,11 +374,22 @@ function renderBallot() {
 
   document.getElementById('resTitle').textContent = resolution.title || `Roll Call #${resolution.id}`;
   document.getElementById('resShort').textContent = toTitleCase(resolution.short || resolution.descr || 'Untitled Resolution');
-  document.getElementById('resDescr').textContent = toTitleCase(resolution.descr || '');
+  const descEl = document.getElementById('resDescr');
+  descEl.textContent = recapDescription(resolution);
+  descEl.classList.toggle('is-placeholder', isPlaceholderDescr(resolution));
   document.getElementById('resDate').textContent = formatDate(resolution.date);
   document.getElementById('resTopic').textContent = resolution.issues.length
     ? resolution.issues.join(', ')
     : 'General';
+
+  const learnMore = document.getElementById('resLearnMore');
+  const docSymbol = unDocSymbol(resolution.title);
+  if (docSymbol) {
+    learnMore.href = `https://digitallibrary.un.org/search?p=${encodeURIComponent(docSymbol)}`;
+    learnMore.hidden = false;
+  } else {
+    learnMore.hidden = true;
+  }
 
   document.getElementById('countYes').textContent = yesCountries.length;
   document.getElementById('countAbstain').textContent = abstainCountries.length;
@@ -397,6 +427,15 @@ function formatDate(iso) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
 
+// Convert this dataset's title format ("R/60/251") into the official UN
+// document symbol ("A/RES/60/251") for linking to the UN Digital Library.
+function unDocSymbol(title) {
+  if (!title) return null;
+  const m = title.match(/^R\/(\d+)\/(\S+)$/);
+  if (!m) return null;
+  return `A/RES/${m[1]}/${m[2]}`;
+}
+
 // ============================================================
 // HINTS
 // ============================================================
@@ -409,54 +448,36 @@ function renderHints() {
   const s = state.session;
   const noCodes = [...s.noCountries];
 
-  const geoLevel = state.hints.get('geography') || 0;
-  const relLevel = state.hints.get('religion') || 0;
-  const langLevel = state.hints.get('language') || 0;
-
-  if (geoLevel === 1) {
-    panel.appendChild(buildHintBlock('Geography of Dissent', noCodes.map(c => state.countryMeta[c].region)));
-  } else if (geoLevel >= 2) {
-    panel.appendChild(buildDetailedHintBlock('Geography of Dissent — by Country', noCodes, c => state.countryMeta[c].region));
+  if (state.hints.has('geography')) {
+    panel.appendChild(buildHintBlock('Geography of Dissent', noCodes, c => state.countryMeta[c].region));
   }
-
-  if (relLevel === 1) {
-    panel.appendChild(buildHintBlock('Majority Faith of Dissent', noCodes.map(c => state.countryMeta[c].religion)));
-  } else if (relLevel >= 2) {
-    panel.appendChild(buildDetailedHintBlock('Majority Faith of Dissent — by Country', noCodes, c => state.countryMeta[c].religion));
+  if (state.hints.has('religion')) {
+    panel.appendChild(buildHintBlock('Majority Faith of Dissent', noCodes, c => state.countryMeta[c].religion));
   }
-
-  if (langLevel === 1) {
-    panel.appendChild(buildHintBlock('Primary Language of Dissent', noCodes.map(c => state.countryMeta[c].language)));
-  } else if (langLevel >= 2) {
-    panel.appendChild(buildDetailedHintBlock('Primary Language of Dissent — by Country', noCodes, c => state.countryMeta[c].language));
+  if (state.hints.has('language')) {
+    panel.appendChild(buildHintBlock('Primary Language of Dissent', noCodes, c => state.countryMeta[c].language));
   }
 }
 
-// Level 1: aggregate counts across all "no" voters (e.g. "Asia ×4")
-function buildHintBlock(title, values) {
-  const counts = {};
-  values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
-  const tags = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([k, v]) => `<span class="hint-tag">${k}${v > 1 ? ` ×${v}` : ''}</span>`)
+// Aggregate counts across all "no" voters (e.g. "Europe 1/30") – the found
+// count updates live as the player correctly identifies countries in that
+// group.
+function buildHintBlock(title, codes, getValue) {
+  const s = state.session;
+  const groups = {}; // value -> { total, found }
+  codes.forEach(code => {
+    const v = getValue(code);
+    if (!groups[v]) groups[v] = { total: 0, found: 0 };
+    groups[v].total += 1;
+    if (s.guessedCorrect.has(code)) groups[v].found += 1;
+  });
+  const tags = Object.entries(groups)
+    .sort((a, b) => b[1].total - a[1].total)
+    .map(([k, g]) => `<span class="hint-tag">${k}: ${g.found}/${g.total}</span>`)
     .join('');
   const block = document.createElement('div');
   block.className = 'hint-block';
   block.innerHTML = `<p class="hint-title">${title}</p><div class="hint-tags">${tags}</div>`;
-  return block;
-}
-
-// Level 2: a tag per "no" voter, naming each country alongside its attribute —
-// only revealed for countries not yet correctly guessed, to keep some challenge.
-function buildDetailedHintBlock(title, codes, getValue) {
-  const s = state.session;
-  const tags = codes
-    .filter(code => !s.guessedCorrect.has(code))
-    .map(code => `<span class="hint-tag">${countryName(code)}: ${getValue(code)}</span>`)
-    .join('');
-  const block = document.createElement('div');
-  block.className = 'hint-block';
-  block.innerHTML = `<p class="hint-title">${title}</p><div class="hint-tags">${tags || '<span class="hint-tag">All found</span>'}</div>`;
   return block;
 }
 
@@ -495,10 +516,6 @@ function renderMap() {
     path.setAttribute('d', c.path);
     path.setAttribute('class', 'country-shape');
     path.dataset.code = c.id;
-    path.addEventListener('click', () => onCountryClick(c.id));
-    path.addEventListener('mousemove', e => showTooltip(e, c));
-    path.addEventListener('mouseleave', hideTooltip);
-    path.addEventListener('touchstart', e => { showTooltip(e.touches[0], c); }, { passive: true });
     shapesGroup.appendChild(path);
 
     if (c.centroid) {
@@ -507,16 +524,38 @@ function renderMap() {
       text.setAttribute('y', c.centroid[1]);
       text.setAttribute('class', 'country-label');
       text.dataset.code = c.id;
+      text.dataset.area = c.area || 0;
       text.textContent = c.name || c.id;
       text.setAttribute('text-anchor', 'middle');
       labelsGroup.appendChild(text);
     }
   });
 
+  // Event delegation: one listener per interaction type instead of one per
+  // country (240+ shapes) – much cheaper to set up and keeps mousemove
+  // handling lightweight.
+  shapesGroup.addEventListener('click', e => {
+    const code = e.target.dataset && e.target.dataset.code;
+    if (code) onCountryClick(code);
+  });
+  shapesGroup.addEventListener('mousemove', e => {
+    const code = e.target.dataset && e.target.dataset.code;
+    if (!code) { hideTooltip(); return; }
+    const country = state.countryById[code];
+    if (country) showTooltip(e, country);
+  });
+  shapesGroup.addEventListener('mouseleave', hideTooltip);
+  shapesGroup.addEventListener('touchstart', e => {
+    const code = e.target.dataset && e.target.dataset.code;
+    if (!code) return;
+    const country = state.countryById[code];
+    if (country) showTooltip(e.touches[0], country);
+  }, { passive: true });
+
   svgEl.appendChild(shapesGroup);
   svgEl.appendChild(labelsGroup);
 
-  // Cache label geometry once — avoids repeated getAttribute/parseFloat calls
+  // Cache label geometry once – avoids repeated getAttribute/parseFloat calls
   // on every pan/zoom frame.
   labelCache = [];
   labelsGroup.querySelectorAll('.country-label').forEach(el => {
@@ -525,6 +564,7 @@ function renderMap() {
       cx: parseFloat(el.getAttribute('x')),
       cy: parseFloat(el.getAttribute('y')),
       textLen: el.textContent.length,
+      area: parseFloat(el.dataset.area) || 0,
     });
   });
   viewportRect = viewportEl.getBoundingClientRect();
@@ -536,7 +576,7 @@ function renderMap() {
 }
 
 function showTooltip(evt, country) {
-  const rect = viewportEl.getBoundingClientRect();
+  const rect = viewportRect || viewportEl.getBoundingClientRect();
   const x = (evt.clientX !== undefined ? evt.clientX : evt.pageX) - rect.left;
   const y = (evt.clientY !== undefined ? evt.clientY : evt.pageY) - rect.top;
   tooltipEl.style.left = x + 'px';
@@ -548,12 +588,24 @@ function hideTooltip() {
   tooltipEl.hidden = true;
 }
 
-// ---------- Pan / Zoom (viewBox-based — no per-element restyling) ----------
+// ---------- Pan / Zoom (viewBox-based – no per-element restyling) ----------
 function attachPanZoom() {
   let dragging = false;
   let lastX, lastY;
   let pinchDist = null;
   let rafPending = false;
+  let dragDistance = 0;
+  const DRAG_THRESHOLD = 4; // px – beyond this, treat as a pan, not a click
+
+  // Suppress the click on country shapes if the mouse moved more than the
+  // threshold between mousedown and mouseup (i.e. the user was panning,
+  // not clicking a country).
+  svgEl.addEventListener('click', e => {
+    if (dragDistance > DRAG_THRESHOLD) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  }, true);
 
   let labelUpdateTimer = null;
   function scheduleApply() {
@@ -562,7 +614,7 @@ function attachPanZoom() {
     requestAnimationFrame(() => {
       svgEl.setAttribute('viewBox', `${mapView.x.toFixed(2)} ${mapView.y.toFixed(2)} ${mapView.w.toFixed(2)} ${mapView.h.toFixed(2)}`);
       rafPending = false;
-      // Label overlap recalculation is the expensive part — debounce it so
+      // Label overlap recalculation is the expensive part – debounce it so
       // rapid wheel/drag events don't trigger it on every single frame.
       clearTimeout(labelUpdateTimer);
       labelUpdateTimer = setTimeout(updateLabelVisibility, 80);
@@ -581,6 +633,7 @@ function attachPanZoom() {
 
   viewportEl.onmousedown = e => {
     dragging = true;
+    dragDistance = 0;
     lastX = e.clientX; lastY = e.clientY;
     viewportEl.classList.add('grabbing');
   };
@@ -589,6 +642,7 @@ function attachPanZoom() {
     const dx = e.clientX - lastX;
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
+    dragDistance += Math.abs(dx) + Math.abs(dy);
     pan(dx, dy);
     scheduleApply();
   });
@@ -601,6 +655,7 @@ function attachPanZoom() {
   viewportEl.addEventListener('touchstart', e => {
     if (e.touches.length === 1) {
       dragging = true;
+      dragDistance = 0;
       lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
     } else if (e.touches.length === 2) {
       pinchDist = touchDist(e.touches);
@@ -612,6 +667,7 @@ function attachPanZoom() {
       const dx = e.touches[0].clientX - lastX;
       const dy = e.touches[0].clientY - lastY;
       lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+      dragDistance += Math.abs(dx) + Math.abs(dy);
       pan(dx, dy);
       scheduleApply();
     } else if (e.touches.length === 2 && pinchDist != null) {
@@ -621,6 +677,7 @@ function attachPanZoom() {
       const rect = viewportEl.getBoundingClientRect();
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
       const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+      dragDistance += DRAG_THRESHOLD + 1; // pinch is never a tap
       zoomAt(cx, cy, rect, factor);
       scheduleApply();
     }
@@ -647,7 +704,7 @@ function touchDist(touches) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-// Pan by screen-space pixel delta — convert to viewBox units using current scale.
+// Pan by screen-space pixel delta – convert to viewBox units using current scale.
 function pan(dxScreen, dyScreen) {
   const rect = viewportEl.getBoundingClientRect();
   const scaleX = mapView.w / rect.width;
@@ -696,7 +753,7 @@ function applyViewBox() {
 // Show country labels only when zoomed in enough that names won't overlap.
 function updateLabelVisibility() {
   const zoomRatio = BASE_W / mapView.w; // >1 means zoomed in
-  const threshold = 1.6;
+  const threshold = 2.2; // require more zoom before any labels appear
   if (zoomRatio < threshold) {
     if (labelsHiddenAll) return;
     labelCache.forEach(item => item.el.classList.remove('visible'));
@@ -708,6 +765,11 @@ function updateLabelVisibility() {
   const rect = viewportRect || viewportEl.getBoundingClientRect();
   const vw = rect.width, vh = rect.height;
 
+  // Font size is fixed at 6px in CSS regardless of zoom (non-scaling), so
+  // estimate on-screen text width directly from font size, not from zoomRatio.
+  const FONT_PX = 6;
+  const CHAR_W = FONT_PX * 0.6;
+
   const visible = [];
   labelCache.forEach(item => {
     const screenX = (item.cx - mapView.x) / mapView.w * vw;
@@ -716,15 +778,22 @@ function updateLabelVisibility() {
       item.el.classList.remove('visible');
       return;
     }
-    visible.push({ el: item.el, x: screenX, y: screenY, w: (item.textLen * 6.2 * zoomRatio / 6) });
+    visible.push({
+      el: item.el, x: screenX, y: screenY,
+      w: item.textLen * CHAR_W,
+      area: item.area,
+    });
   });
 
-  visible.sort((a, b) => a.w - b.w);
+  // Larger countries (by land area) get priority – a smaller country's
+  // label is suppressed if it overlaps a bigger country's label by any
+  // amount.
+  visible.sort((a, b) => b.area - a.area);
   const placed = [];
   visible.forEach(item => {
     const overlaps = placed.some(p =>
-      Math.abs(p.x - item.x) < (p.w + item.w) / 2 + 6 &&
-      Math.abs(p.y - item.y) < 14
+      Math.abs(p.x - item.x) < (p.w + item.w) / 2 + 4 &&
+      Math.abs(p.y - item.y) < 12
     );
     if (overlaps) {
       item.el.classList.remove('visible');
@@ -752,7 +821,7 @@ function onCountryClick(code) {
   const claim = candidateClaims.find(c => !s.guessedCorrect.has(c.key));
 
   if (claim) {
-    // Correct guess — doesn't cost a guess, even at 0 remaining.
+    // Correct guess – doesn't cost a guess, even at 0 remaining.
     s.guessedCorrect.add(claim.key);
     s.paintedCodes.add(code);
     paintCountry(code, 'no', true);
@@ -770,22 +839,25 @@ function onCountryClick(code) {
   renderGuessFeed();
   updateBallotCounts();
   updateHud();
+  if (state.hints.size) renderHints();
 
   if (s.guessedCorrect.size >= s.noClaims.length) {
     endSession(true);
-  } else if (s.guessesUsed >= s.maxGuesses) {
+  } else if (s.guessesUsed > s.maxGuesses) {
     endSession(false);
   }
 }
 
 function paintCountry(code, voteKey, flash) {
-  const path = svgEl.querySelector(`.country-shape[data-code="${code}"]`);
-  if (!path) return; // some historical codes have no map shape
-  path.classList.remove('flash');
-  // force reflow to restart animation
-  void path.offsetWidth;
-  path.classList.add(`guessed-${voteKey}`);
-  if (flash) path.classList.add('flash');
+  const paths = svgEl.querySelectorAll(`.country-shape[data-code="${code}"]`);
+  if (!paths.length) return; // some historical codes have no map shape
+  paths.forEach(path => {
+    path.classList.remove('flash');
+    // force reflow to restart animation
+    void path.offsetWidth;
+    path.classList.add(`guessed-${voteKey}`);
+    if (flash) path.classList.add('flash');
+  });
 }
 
 function applyGuessedStyles() {
@@ -805,8 +877,9 @@ function revealAll() {
     // wasn't already painted from a wrong guess.
     claim.satisfiedBy.forEach(code => {
       if (s.paintedCodes.has(code)) return;
-      const path = svgEl.querySelector(`.country-shape[data-code="${code}"]`);
-      if (path) path.classList.add('revealed-no');
+      svgEl.querySelectorAll(`.country-shape[data-code="${code}"]`).forEach(path => {
+        path.classList.add('revealed-no');
+      });
     });
   });
 }
@@ -864,10 +937,24 @@ function showResults() {
 
   renderResultsRecap(s, won);
 
+  const playAgainBtn = document.getElementById('playAgainBtn');
+  const shareBtn = document.getElementById('shareResultBtn');
+  if (s.dailyId) {
+    playAgainBtn.textContent = 'Back to Menu';
+    shareBtn.hidden = false;
+  } else {
+    playAgainBtn.textContent = 'Play Again';
+    shareBtn.hidden = true;
+  }
+
+  if (won) {
+    launchConfetti();
+  }
+
   document.getElementById('resultsOverlay').hidden = false;
 }
 
-// Display name for a "no" claim — historical entities are shown by name with
+// Display name for a "no" claim – historical entities are shown by name with
 // their modern successor states listed alongside.
 function claimDisplayName(claim) {
   if (!claim.isHistorical) return countryName(claim.key);
@@ -902,7 +989,7 @@ function renderResultsRecap(s, won) {
   recap.innerHTML = html;
 }
 
-// Many archive entries have no real description — just a repeat of the
+// Many archive entries have no real description – just a repeat of the
 // catalogue title (e.g. "Human Rights Council: resolution / adopted by the
 // General Assembly"). Detect that and fall back to a useful summary built
 // from the resolution's topic/date instead of showing the unhelpful text.
@@ -924,14 +1011,90 @@ function recapDescription(resolution) {
     `Use the vote breakdown on the left as your main clue.`;
 }
 
+const HINT_LABELS = { geography: 'Geography', religion: 'Religion', language: 'Language' };
+
+// Build a Wordle-style share summary for the daily challenge: a row of
+// squares for each guess (correct / wrong-but-informative), plus key stats
+// and which hints were used, and a link back to the site.
+async function shareResult() {
+  const s = state.session;
+  if (!s) return;
+
+  const squares = s.feed.map(item => {
+    if (item.result === 'correct') return '🟩';
+    if (item.actual === VOTE.YES) return '🟦';
+    if (item.actual === VOTE.ABSTAIN) return '🟨';
+    return '⬛'; // absent
+  }).join('');
+
+  const accuracy = s.guessedCorrect.size + s.guessedWrong.length > 0
+    ? Math.round((s.guessedCorrect.size / (s.guessedCorrect.size + s.guessedWrong.length)) * 100)
+    : 0;
+
+  const hintsLine = state.hints.size
+    ? `Hints used: ${[...state.hints].map(h => HINT_LABELS[h] || h).join(', ')}`
+    : 'Hints used: none';
+
+  const lines = [
+    `Votle – ${todayId()}`,
+    s.status === 'won' ? 'Solved!' : 'Did not solve',
+    `${s.guessedCorrect.size}/${s.noClaims.length} found · ${accuracy}% accuracy · ${fmtTime(s.elapsed)}`,
+    squares,
+    hintsLine,
+    VOTLE_CONFIG.SITE_URL,
+  ];
+  const text = lines.join('\n');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ text });
+      return;
+    } catch (err) {
+      // User cancelled or share failed – fall back to clipboard
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Result copied to clipboard.');
+  } catch (err) {
+    toast('Could not copy automatically – select and copy the text manually.');
+  }
+}
+
+// ---------- Confetti ----------
+function launchConfetti() {
+  const colors = ['#2BB3A3', '#FF8A5B', '#3FAE63', '#F0B429', '#4FA8D8'];
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  const pieceCount = 80;
+  for (let i = 0; i < pieceCount; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2.2 + Math.random() * 1.6) + 's';
+    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 4200);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reviewMapBtn').addEventListener('click', () => {
     document.getElementById('resultsOverlay').hidden = true;
   });
   document.getElementById('playAgainBtn').addEventListener('click', () => {
     document.getElementById('resultsOverlay').hidden = true;
-    startSession();
+    if (state.session && state.session.dailyId) {
+      backToSetup();
+    } else {
+      startSession();
+    }
   });
+  document.getElementById('shareResultBtn').addEventListener('click', shareResult);
   document.getElementById('quitBtn').addEventListener('click', () => {
     if (!state.session || state.session.status !== 'playing') {
       backToSetup();
@@ -1074,9 +1237,9 @@ async function submitResult() {
     maxGuesses: s.maxGuesses,
     found: s.guessedCorrect.size,
     total: s.noClaims.length,
-    difficulty: setup.difficulty.value,
-    era: setup.era,
-    topic: setup.topic,
+    difficulty: s.dailyId ? 'standard' : setup.difficulty.value,
+    era: s.dailyId ? 'any' : setup.era,
+    topic: s.dailyId ? 'any' : setup.topic,
     hints: [...state.hints],
     dailyId: s.dailyId || undefined,
     date: new Date().toISOString(),
@@ -1091,7 +1254,7 @@ async function submitResult() {
       body: JSON.stringify(payload),
     });
   } catch (err) {
-    // Non-fatal — stats just won't sync this round
+    // Non-fatal – stats just won't sync this round
     console.warn('Could not save result', err);
   }
 }
@@ -1142,13 +1305,13 @@ async function openStats() {
 function renderStats(data) {
   const content = document.getElementById('statsContent');
   if (!data.gamesPlayed) {
-    content.innerHTML = '<p class="stats-signed-out">No games recorded yet — play a session to start building your record.</p>';
+    content.innerHTML = '<p class="stats-signed-out">No games recorded yet – play a session to start building your record.</p>';
     return;
   }
 
   const winRate = Math.round((data.wins / data.gamesPlayed) * 100);
   const avgAccuracy = Math.round(data.avgAccuracy);
-  const fastest = data.fastestTime != null ? fmtTime(data.fastestTime) : '—';
+  const fastest = data.fastestTime != null ? fmtTime(data.fastestTime) : '–';
 
   let html = `
     <div class="stats-headline">
@@ -1293,12 +1456,15 @@ function initDailyChallenge() {
         });
         const data = await resp.json();
         if (data.played) {
-          toast("You've already played today's challenge — come back tomorrow.");
+          toast("You've already played today's challenge – come back tomorrow.");
           return;
         }
       } catch (err) {
-        // Non-fatal — fall through and let them play; server will just record another attempt.
+        // Non-fatal – fall through and let them play; server will just record another attempt.
       }
+    } else if (localStorage.getItem('votle-daily-played') === dailyId) {
+      toast("You've already played today's challenge – come back tomorrow.");
+      return;
     }
 
     startSession({ resolution, dailyId });
@@ -1312,7 +1478,14 @@ async function refreshDailyCard() {
   btn.disabled = false;
   btn.textContent = "Play Today's Challenge";
 
-  if (!state.user) return;
+  if (!state.user) {
+    if (localStorage.getItem('votle-daily-played') === todayId()) {
+      statusEl.innerHTML = `<p class="daily-status-line played">You've completed today's challenge.</p>`;
+      btn.disabled = true;
+      btn.textContent = 'Completed – Come Back Tomorrow';
+    }
+    return;
+  }
 
   try {
     const resp = await fetch(`${VOTLE_CONFIG.WORKER_URL}/daily-status?id=${todayId()}`, {
@@ -1322,9 +1495,9 @@ async function refreshDailyCard() {
     if (!resp.ok) return;
     if (data.played) {
       const verb = data.won ? 'Solved' : 'Attempted';
-      statusEl.innerHTML = `<p class="daily-status-line played">${verb} today — ${data.found} / ${data.total} found, ${data.accuracy}% accuracy.</p>`;
+      statusEl.innerHTML = `<p class="daily-status-line played">${verb} today – ${data.found} / ${data.total} found, ${data.accuracy}% accuracy.</p>`;
       btn.disabled = true;
-      btn.textContent = 'Completed — Come Back Tomorrow';
+      btn.textContent = 'Completed – Come Back Tomorrow';
     }
   } catch (err) {
     // Non-fatal
@@ -1382,7 +1555,7 @@ async function loadHistoryPage(reset) {
     const list = document.getElementById('historyList');
 
     if (!data.items.length && reset) {
-      content.innerHTML = '<p class="stats-signed-out">No games played yet — your history will show up here once you finish a session.</p>';
+      content.innerHTML = '<p class="stats-signed-out">No games played yet – your history will show up here once you finish a session.</p>';
       return;
     }
 

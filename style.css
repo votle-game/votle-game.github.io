@@ -1,5 +1,5 @@
 /* ============================================================
-   VOTLE — Design tokens
+   VOTLE – Design tokens
    ============================================================ */
 :root {
   --bg: #F4FAFB;
@@ -192,12 +192,6 @@ html.dark .icon-moon { display: block; }
 }
 .hero-sub em { font-style: normal; color: var(--ink); font-weight: 600; }
 
-.setup-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 40px;
-}
 .setup-card {
   background: var(--bg-elevated);
   border: 1px solid var(--line);
@@ -205,7 +199,6 @@ html.dark .icon-moon { display: block; }
   padding: 24px 26px;
   box-shadow: var(--shadow);
 }
-#dailyCard, #topicCard { grid-column: span 2; }
 
 .card-title {
   font-family: var(--font-display);
@@ -229,6 +222,99 @@ html.dark .icon-moon { display: block; }
   margin: 0 0 18px;
   line-height: 1.55;
 }
+
+/* ---------- Daily Challenge hero ---------- */
+.daily-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  padding: 36px 40px;
+  margin-bottom: 22px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  box-shadow: var(--shadow);
+}
+.daily-hero-glow {
+  position: absolute;
+  inset: -40% -10% auto auto;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.daily-hero-body { position: relative; max-width: 560px; }
+.daily-hero-eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.18);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.daily-hero-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.2;
+  color: #fff;
+  margin: 0 0 10px;
+}
+.daily-hero-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.92);
+  margin: 0 0 18px;
+}
+.daily-hero-btn {
+  background: #fff;
+  color: var(--accent-2);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.daily-hero-btn:hover { background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.22); }
+.daily-hero-btn:disabled { background: rgba(255,255,255,0.5); color: rgba(0,0,0,0.4); }
+
+/* ---------- Quick Play card ---------- */
+.quickplay-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 24px 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 40px;
+}
+.quickplay-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+.quickplay-actions { display: flex; gap: 12px; flex-shrink: 0; }
+.quickplay-actions .btn-secondary,
+.quickplay-actions .btn-primary { padding: 14px 24px; font-size: 15px; }
+
+/* ---------- Settings overlay sections ---------- */
+.settings-section + .settings-section {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.settings-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+.choice-row + .choice-row { margin-top: 10px; }
+.choice-full { flex: 1 1 100%; }
 
 .choice-row {
   display: flex;
@@ -388,6 +474,16 @@ html.dark .btn-primary { box-shadow: 0 4px 14px rgba(61,217,199,0.25); }
   font-style: italic;
   opacity: 0.75;
 }
+.ballot-learn-more {
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+  margin: -6px 0 18px;
+}
+.ballot-learn-more:hover { text-decoration: underline; }
+.ballot-learn-more[hidden] { display: none; }
 .ballot-meta {
   display: flex;
   gap: 24px;
@@ -808,6 +904,10 @@ html.dark .map-tooltip { background: var(--bg-elevated); color: var(--ink); bord
   max-height: 110px;
   overflow-y: auto;
 }
+.results-recap-desc.is-placeholder {
+  font-style: italic;
+  opacity: 0.75;
+}
 .recap-missed {
   display: flex; flex-wrap: wrap; gap: 6px;
 }
@@ -1016,9 +1116,34 @@ html.dark .map-tooltip { background: var(--bg-elevated); color: var(--ink); bord
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 300;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 9px;
+  height: 14px;
+  opacity: 0.9;
+  animation-name: confettiFall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(540deg); opacity: 0; }
+}
+
 @media (max-width: 880px) {
-  .setup-grid { grid-template-columns: 1fr; }
-  #dailyCard, #topicCard { grid-column: span 1; }
+  .quickplay-card { flex-direction: column; align-items: stretch; }
+  .quickplay-actions { flex-direction: column; }
+  .daily-hero { padding: 28px 24px; }
+  .choice-row { flex-wrap: wrap; }
   #gameScreen { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: auto; }
   .ballot { border-right: none; border-bottom: 1px solid var(--line); max-height: 44vh; }
   .map-stage { height: 60vh; }
