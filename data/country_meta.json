@@ -1,1 +1,1190 @@
-{"AD":{"name":"Andorra","region":"Europe","religion":"Christian","language":"Catalan"},"AE":{"name":"United Arab Emirates","region":"Middle East","religion":"Muslim","language":"Arabic"},"AF":{"name":"Afghanistan","region":"Asia","religion":"Muslim","language":"Pashto"},"AG":{"name":"Antigua and Barbuda","region":"North America","religion":"Christian","language":"English"},"AL":{"name":"Albania","region":"Europe","religion":"Muslim","language":"Albanian"},"AM":{"name":"Armenia","region":"Europe","religion":"Christian","language":"Armenian"},"AO":{"name":"Angola","region":"Africa","religion":"Christian","language":"Portuguese"},"AR":{"name":"Argentina","region":"South America","religion":"Christian","language":"Spanish"},"AT":{"name":"Austria","region":"Europe","religion":"Christian","language":"German"},"AU":{"name":"Australia","region":"Oceania","religion":"Christian","language":"English"},"AZ":{"name":"Azerbaijan","region":"Europe","religion":"Muslim","language":"Azerbaijani"},"BA":{"name":"Bosnia and Herzegovina","region":"Europe","religion":"Christian","language":"Bosnian"},"BB":{"name":"Barbados","region":"North America","religion":"Christian","language":"English"},"BD":{"name":"Bangladesh","region":"Asia","religion":"Muslim","language":"Bengali"},"BE":{"name":"Belgium","region":"Europe","religion":"Christian","language":"French"},"BF":{"name":"Burkina Faso","region":"Africa","religion":"Muslim","language":"French"},"BG":{"name":"Bulgaria","region":"Europe","religion":"Christian","language":"Bulgarian"},"BH":{"name":"Bahrain","region":"Middle East","religion":"Muslim","language":"Arabic"},"BI":{"name":"Burundi","region":"Africa","religion":"Christian","language":"French"},"BJ":{"name":"Benin","region":"Africa","religion":"Christian","language":"French"},"BN":{"name":"Brunei","region":"Asia","religion":"Muslim","language":"Malay"},"BO":{"name":"Bolivia","region":"South America","religion":"Christian","language":"Spanish"},"BR":{"name":"Brazil","region":"South America","religion":"Christian","language":"Portuguese"},"BS":{"name":"Bahamas","region":"North America","religion":"Christian","language":"English"},"BT":{"name":"Bhutan","region":"Asia","religion":"Buddhist","language":"Dzongkha"},"BW":{"name":"Botswana","region":"Africa","religion":"Christian","language":"English"},"BY":{"name":"Belarus","region":"Europe","religion":"Christian","language":"Russian"},"BZ":{"name":"Belize","region":"North America","religion":"Christian","language":"English"},"CA":{"name":"Canada","region":"North America","religion":"Christian","language":"French"},"CD":{"name":"DR Congo","region":"Africa","religion":"Christian","language":"French"},"CF":{"name":"Central African Republic","region":"Africa","religion":"Christian","language":"French"},"CG":{"name":"Republic of the Congo","region":"Africa","religion":"Christian","language":"French"},"CH":{"name":"Switzerland","region":"Europe","religion":"Christian","language":"German"},"CI":{"name":"Cote d'Ivoire","region":"Africa","religion":"Christian","language":"French"},"CL":{"name":"Chile","region":"South America","religion":"Christian","language":"Spanish"},"CM":{"name":"Cameroon","region":"Africa","religion":"Christian","language":"French"},"CN":{"name":"China","region":"Asia","religion":"Other","language":"Chinese"},"CO":{"name":"Colombia","region":"South America","religion":"Christian","language":"Spanish"},"CR":{"name":"Costa Rica","region":"North America","religion":"Christian","language":"Spanish"},"CS":{"name":"Czechoslovakia / Serbia & Montenegro","region":"Europe","religion":"Christian","language":"Serbo-Croatian"},"CU":{"name":"Cuba","region":"North America","religion":"Christian","language":"Spanish"},"CV":{"name":"Cabo Verde","region":"Africa","religion":"Christian","language":"Portuguese"},"CY":{"name":"Cyprus","region":"Europe","religion":"Christian","language":"Greek"},"CZ":{"name":"Czechia","region":"Europe","religion":"Christian","language":"Czech"},"DD":{"name":"East Germany","region":"Europe","religion":"Christian","language":"German"},"DE":{"name":"Germany","region":"Europe","religion":"Christian","language":"German"},"DJ":{"name":"Djibouti","region":"Africa","religion":"Muslim","language":"Arabic"},"DK":{"name":"Denmark","region":"Europe","religion":"Christian","language":"Danish"},"DM":{"name":"Dominica","region":"North America","religion":"Christian","language":"English"},"DO":{"name":"Dominican Republic","region":"North America","religion":"Christian","language":"Spanish"},"DZ":{"name":"Algeria","region":"Africa","religion":"Muslim","language":"Arabic"},"EC":{"name":"Ecuador","region":"South America","religion":"Christian","language":"Spanish"},"EE":{"name":"Estonia","region":"Europe","religion":"Christian","language":"Estonian"},"EG":{"name":"Egypt","region":"Africa","religion":"Muslim","language":"Arabic"},"ER":{"name":"Eritrea","region":"Africa","religion":"Christian","language":"Arabic"},"ES":{"name":"Spain","region":"Europe","religion":"Christian","language":"Spanish"},"ET":{"name":"Ethiopia","region":"Africa","religion":"Christian","language":"Amharic"},"FI":{"name":"Finland","region":"Europe","religion":"Christian","language":"Finnish"},"FJ":{"name":"Fiji","region":"Oceania","religion":"Christian","language":"English"},"FM":{"name":"Micronesia","region":"Oceania","religion":"Christian","language":"English"},"FR":{"name":"France","region":"Europe","religion":"Christian","language":"French"},"GA":{"name":"Gabon","region":"Africa","religion":"Christian","language":"French"},"GB":{"name":"United Kingdom","region":"Europe","religion":"Christian","language":"English"},"GD":{"name":"Grenada","region":"North America","religion":"Christian","language":"English"},"GE":{"name":"Georgia","region":"Europe","religion":"Christian","language":"Georgian"},"GH":{"name":"Ghana","region":"Africa","religion":"Christian","language":"English"},"GM":{"name":"Gambia","region":"Africa","religion":"Muslim","language":"English"},"GN":{"name":"Guinea","region":"Africa","religion":"Muslim","language":"French"},"GQ":{"name":"Equatorial Guinea","region":"Africa","religion":"Christian","language":"Portuguese"},"GR":{"name":"Greece","region":"Europe","religion":"Christian","language":"Greek"},"GT":{"name":"Guatemala","region":"North America","religion":"Christian","language":"Spanish"},"GW":{"name":"Guinea-Bissau","region":"Africa","religion":"Muslim","language":"Portuguese"},"GY":{"name":"Guyana","region":"South America","religion":"Christian","language":"English"},"HN":{"name":"Honduras","region":"North America","religion":"Christian","language":"Spanish"},"HR":{"name":"Croatia","region":"Europe","religion":"Christian","language":"Croatian"},"HT":{"name":"Haiti","region":"North America","religion":"Christian","language":"French"},"HU":{"name":"Hungary","region":"Europe","religion":"Christian","language":"Hungarian"},"ID":{"name":"Indonesia","region":"Asia","religion":"Muslim","language":"Indonesian"},"IE":{"name":"Ireland","region":"Europe","religion":"Christian","language":"English"},"IL":{"name":"Israel","region":"Middle East","religion":"Jewish","language":"Hebrew"},"IN":{"name":"India","region":"Asia","religion":"Hindu","language":"Hindi"},"IQ":{"name":"Iraq","region":"Middle East","religion":"Muslim","language":"Arabic"},"IR":{"name":"Iran, Islamic Republic of","region":"Middle East","religion":"Muslim","language":"Persian"},"IS":{"name":"Iceland","region":"Europe","religion":"Christian","language":"Icelandic"},"IT":{"name":"Italy","region":"Europe","religion":"Christian","language":"Italian"},"JM":{"name":"Jamaica","region":"North America","religion":"Christian","language":"English"},"JO":{"name":"Jordan","region":"Middle East","religion":"Muslim","language":"Arabic"},"JP":{"name":"Japan","region":"Asia","religion":"Buddhist","language":"Japanese"},"KE":{"name":"Kenya","region":"Africa","religion":"Christian","language":"English"},"KG":{"name":"Kyrgyzstan","region":"Asia","religion":"Muslim","language":"Russian"},"KH":{"name":"Cambodia","region":"Asia","religion":"Buddhist","language":"Khmer"},"KI":{"name":"Kiribati","region":"Oceania","religion":"Christian","language":"English"},"KM":{"name":"Comoros","region":"Africa","religion":"Muslim","language":"Arabic"},"KN":{"name":"Saint Kitts and Nevis","region":"North America","religion":"Christian","language":"English"},"KP":{"name":"North Korea","region":"Asia","religion":"Other","language":"Korean"},"KR":{"name":"South Korea","region":"Asia","religion":"Christian","language":"Korean"},"KW":{"name":"Kuwait","region":"Middle East","religion":"Muslim","language":"Arabic"},"KZ":{"name":"Kazakhstan","region":"Asia","religion":"Muslim","language":"Russian"},"LA":{"name":"Laos","region":"Asia","religion":"Buddhist","language":"Lao"},"LB":{"name":"Lebanon","region":"Middle East","religion":"Muslim","language":"Arabic"},"LC":{"name":"Saint Lucia","region":"North America","religion":"Christian","language":"English"},"LI":{"name":"Liechtenstein","region":"Europe","religion":"Christian","language":"German"},"LK":{"name":"Sri Lanka","region":"Asia","religion":"Buddhist","language":"Sinhala"},"LR":{"name":"Liberia","region":"Africa","religion":"Christian","language":"English"},"LS":{"name":"Lesotho","region":"Africa","religion":"Christian","language":"English"},"LT":{"name":"Lithuania","region":"Europe","religion":"Christian","language":"Lithuanian"},"LU":{"name":"Luxembourg","region":"Europe","religion":"Christian","language":"French"},"LV":{"name":"Latvia","region":"Europe","religion":"Christian","language":"Latvian"},"LY":{"name":"Libya","region":"Africa","religion":"Muslim","language":"Arabic"},"MA":{"name":"Morocco","region":"Africa","religion":"Muslim","language":"Arabic"},"MC":{"name":"Monaco","region":"Europe","religion":"Christian","language":"French"},"MD":{"name":"Moldova","region":"Europe","religion":"Christian","language":"Romanian"},"ME":{"name":"Montenegro","region":"Europe","religion":"Christian","language":"Montenegrin"},"MG":{"name":"Madagascar","region":"Africa","religion":"Christian","language":"French"},"MH":{"name":"Marshall Islands","region":"Oceania","religion":"Christian","language":"English"},"MK":{"name":"North Macedonia","region":"Europe","religion":"Christian","language":"Macedonian"},"ML":{"name":"Mali","region":"Africa","religion":"Muslim","language":"French"},"MM":{"name":"Myanmar","region":"Asia","religion":"Buddhist","language":"Burmese"},"MN":{"name":"Mongolia","region":"Asia","religion":"Buddhist","language":"Mongolian"},"MR":{"name":"Mauritania","region":"Africa","religion":"Muslim","language":"Arabic"},"MT":{"name":"Malta","region":"Europe","religion":"Christian","language":"Maltese"},"MU":{"name":"Mauritius","region":"Africa","religion":"Hindu","language":"English"},"MV":{"name":"Maldives","region":"Asia","religion":"Muslim","language":"Dhivehi"},"MW":{"name":"Malawi","region":"Africa","religion":"Christian","language":"English"},"MX":{"name":"Mexico","region":"North America","religion":"Christian","language":"Spanish"},"MY":{"name":"Malaysia","region":"Asia","religion":"Muslim","language":"Malay"},"MZ":{"name":"Mozambique","region":"Africa","religion":"Christian","language":"Portuguese"},"NA":{"name":"Namibia","region":"Africa","religion":"Christian","language":"English"},"NE":{"name":"Niger","region":"Africa","religion":"Muslim","language":"French"},"NG":{"name":"Nigeria","region":"Africa","religion":"Muslim","language":"English"},"NI":{"name":"Nicaragua","region":"North America","religion":"Christian","language":"Spanish"},"NL":{"name":"Netherlands","region":"Europe","religion":"Christian","language":"Dutch"},"NO":{"name":"Norway","region":"Europe","religion":"Christian","language":"Norwegian"},"NP":{"name":"Nepal","region":"Asia","religion":"Hindu","language":"Nepali"},"NR":{"name":"Nauru","region":"Oceania","religion":"Christian","language":"English"},"NZ":{"name":"New Zealand","region":"Oceania","religion":"Christian","language":"English"},"OM":{"name":"Oman","region":"Middle East","religion":"Muslim","language":"Arabic"},"PA":{"name":"Panama","region":"North America","religion":"Christian","language":"Spanish"},"PE":{"name":"Peru","region":"South America","religion":"Christian","language":"Spanish"},"PG":{"name":"Papua New Guinea","region":"Oceania","religion":"Christian","language":"English"},"PH":{"name":"Philippines","region":"Asia","religion":"Christian","language":"English"},"PK":{"name":"Pakistan","region":"Asia","religion":"Muslim","language":"English"},"PL":{"name":"Poland","region":"Europe","religion":"Christian","language":"Polish"},"PT":{"name":"Portugal","region":"Europe","religion":"Christian","language":"Portuguese"},"PW":{"name":"Palau","region":"Oceania","religion":"Christian","language":"Palauan"},"PY":{"name":"Paraguay","region":"South America","religion":"Christian","language":"Spanish"},"QA":{"name":"Qatar","region":"Middle East","religion":"Muslim","language":"Arabic"},"RO":{"name":"Romania","region":"Europe","religion":"Christian","language":"Romanian"},"RU":{"name":"Russia","region":"Europe","religion":"Christian","language":"Russian"},"RW":{"name":"Rwanda","region":"Africa","religion":"Christian","language":"French"},"SA":{"name":"Saudi Arabia","region":"Middle East","religion":"Muslim","language":"Arabic"},"SB":{"name":"Solomon Islands","region":"Oceania","religion":"Christian","language":"English"},"SC":{"name":"Seychelles","region":"Africa","religion":"Christian","language":"English"},"SD":{"name":"Sudan","region":"Africa","religion":"Muslim","language":"Arabic"},"SE":{"name":"Sweden","region":"Europe","religion":"Christian","language":"Swedish"},"SG":{"name":"Singapore","region":"Asia","religion":"Other","language":"English"},"SI":{"name":"Slovenia","region":"Europe","religion":"Christian","language":"Slovenian"},"SK":{"name":"Slovakia","region":"Europe","religion":"Christian","language":"Slovak"},"SL":{"name":"Sierra Leone","region":"Africa","religion":"Muslim","language":"English"},"SM":{"name":"San Marino","region":"Europe","religion":"Christian","language":"Italian"},"SN":{"name":"Senegal","region":"Africa","religion":"Muslim","language":"French"},"SO":{"name":"Somalia","region":"Africa","religion":"Muslim","language":"Arabic"},"SR":{"name":"Suriname","region":"South America","religion":"Christian","language":"Dutch"},"SS":{"name":"South Sudan","region":"Africa","religion":"Christian","language":"Arabic"},"ST":{"name":"Sao Tome and Principe","region":"Africa","religion":"Christian","language":"Portuguese"},"SV":{"name":"El Salvador","region":"North America","religion":"Christian","language":"Spanish"},"SY":{"name":"Syria","region":"Middle East","religion":"Muslim","language":"Arabic"},"SZ":{"name":"Eswatini","region":"Africa","religion":"Christian","language":"English"},"TD":{"name":"Chad","region":"Africa","religion":"Muslim","language":"Arabic"},"TG":{"name":"Togo","region":"Africa","religion":"Muslim","language":"French"},"TH":{"name":"Thailand","region":"Asia","religion":"Buddhist","language":"Thai"},"TJ":{"name":"Tajikistan","region":"Asia","religion":"Muslim","language":"Tajik"},"TL":{"name":"Timor-Leste","region":"Asia","religion":"Christian","language":"Portuguese"},"TM":{"name":"Turkmenistan","region":"Asia","religion":"Muslim","language":"Turkmen"},"TN":{"name":"Tunisia","region":"Africa","religion":"Muslim","language":"Arabic"},"TO":{"name":"Tonga","region":"Oceania","religion":"Christian","language":"English"},"TR":{"name":"T\u00fcrkiye","region":"Middle East","religion":"Muslim","language":"Turkish"},"TT":{"name":"Trinidad and Tobago","region":"North America","religion":"Christian","language":"English"},"TV":{"name":"Tuvalu","region":"Oceania","religion":"Christian","language":"English"},"TW":{"name":"Taiwan","region":"Asia","religion":"Other","language":"Chinese"},"TZ":{"name":"Tanzania","region":"Africa","religion":"Muslim","language":"English"},"UA":{"name":"Ukraine","region":"Europe","religion":"Christian","language":"Ukrainian"},"UG":{"name":"Uganda","region":"Africa","religion":"Christian","language":"English"},"US":{"name":"United States","region":"North America","religion":"Christian","language":"English"},"UY":{"name":"Uruguay","region":"South America","religion":"Christian","language":"Spanish"},"UZ":{"name":"Uzbekistan","region":"Asia","religion":"Muslim","language":"Uzbek"},"VC":{"name":"Saint Vincent and the Grenadines","region":"North America","religion":"Christian","language":"English"},"VE":{"name":"Venezuela","region":"South America","religion":"Christian","language":"Spanish"},"VN":{"name":"Vietnam","region":"Asia","religion":"Other","language":"Vietnamese"},"VU":{"name":"Vanuatu","region":"Oceania","religion":"Christian","language":"French"},"WS":{"name":"Samoa","region":"Oceania","religion":"Christian","language":"Samoan"},"YD":{"name":"South Yemen","region":"Middle East","religion":"Muslim","language":"Arabic"},"YE":{"name":"Yemen","region":"Middle East","religion":"Muslim","language":"Arabic"},"YU":{"name":"Yugoslavia","region":"Europe","religion":"Christian","language":"Serbo-Croatian"},"ZA":{"name":"South Africa","region":"Africa","religion":"Christian","language":"English"},"ZM":{"name":"Zambia","region":"Africa","religion":"Christian","language":"English"},"ZW":{"name":"Zimbabwe","region":"Africa","religion":"Christian","language":"English"}}
+{
+  "AD": {
+    "name": "Andorra",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Catalan"
+  },
+  "AE": {
+    "name": "United Arab Emirates",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "AF": {
+    "name": "Afghanistan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Pashto"
+  },
+  "AG": {
+    "name": "Antigua and Barbuda",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "AL": {
+    "name": "Albania",
+    "region": "Europe",
+    "religion": "Muslim",
+    "language": "Albanian"
+  },
+  "AM": {
+    "name": "Armenia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Armenian"
+  },
+  "AO": {
+    "name": "Angola",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "AR": {
+    "name": "Argentina",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "AT": {
+    "name": "Austria",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "German"
+  },
+  "AU": {
+    "name": "Australia",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "AZ": {
+    "name": "Azerbaijan",
+    "region": "Europe",
+    "religion": "Muslim",
+    "language": "Azerbaijani"
+  },
+  "BA": {
+    "name": "Bosnia and Herzegovina",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Bosnian"
+  },
+  "BB": {
+    "name": "Barbados",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "BD": {
+    "name": "Bangladesh",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Bengali"
+  },
+  "BE": {
+    "name": "Belgium",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "BF": {
+    "name": "Burkina Faso",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "BG": {
+    "name": "Bulgaria",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Bulgarian"
+  },
+  "BH": {
+    "name": "Bahrain",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "BI": {
+    "name": "Burundi",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "BJ": {
+    "name": "Benin",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "BN": {
+    "name": "Brunei",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Malay"
+  },
+  "BO": {
+    "name": "Bolivia",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "BR": {
+    "name": "Brazil",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "BS": {
+    "name": "Bahamas",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "BT": {
+    "name": "Bhutan",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Dzongkha"
+  },
+  "BW": {
+    "name": "Botswana",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "BY": {
+    "name": "Belarus",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Russian"
+  },
+  "BZ": {
+    "name": "Belize",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "CA": {
+    "name": "Canada",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CD": {
+    "name": "DR Congo",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CF": {
+    "name": "Central African Republic",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CG": {
+    "name": "Republic of the Congo",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CH": {
+    "name": "Switzerland",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "German"
+  },
+  "CI": {
+    "name": "Cote d'Ivoire",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CL": {
+    "name": "Chile",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "CM": {
+    "name": "Cameroon",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "CN": {
+    "name": "China",
+    "region": "Asia",
+    "religion": "Other",
+    "language": "Chinese"
+  },
+  "CO": {
+    "name": "Colombia",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "CR": {
+    "name": "Costa Rica",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "CS": {
+    "name": "Czechoslovakia / Serbia & Montenegro",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Serbo-Croatian"
+  },
+  "CU": {
+    "name": "Cuba",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "CV": {
+    "name": "Cabo Verde",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "CY": {
+    "name": "Cyprus",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Greek"
+  },
+  "CZ": {
+    "name": "Czechia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Czech"
+  },
+  "DD": {
+    "name": "East Germany",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "German"
+  },
+  "DE": {
+    "name": "Germany",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "German"
+  },
+  "DJ": {
+    "name": "Djibouti",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "DK": {
+    "name": "Denmark",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Danish"
+  },
+  "DM": {
+    "name": "Dominica",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "DO": {
+    "name": "Dominican Republic",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "DZ": {
+    "name": "Algeria",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "EC": {
+    "name": "Ecuador",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "EE": {
+    "name": "Estonia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Estonian"
+  },
+  "EG": {
+    "name": "Egypt",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "ER": {
+    "name": "Eritrea",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Arabic"
+  },
+  "ES": {
+    "name": "Spain",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "ET": {
+    "name": "Ethiopia",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Amharic"
+  },
+  "FI": {
+    "name": "Finland",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Finnish"
+  },
+  "FJ": {
+    "name": "Fiji",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "FM": {
+    "name": "Micronesia",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "FR": {
+    "name": "France",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "GA": {
+    "name": "Gabon",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "GB": {
+    "name": "United Kingdom",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "GD": {
+    "name": "Grenada",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "GE": {
+    "name": "Georgia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Georgian"
+  },
+  "GH": {
+    "name": "Ghana",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "GM": {
+    "name": "Gambia",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "English"
+  },
+  "GN": {
+    "name": "Guinea",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "GQ": {
+    "name": "Equatorial Guinea",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "GR": {
+    "name": "Greece",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Greek"
+  },
+  "GT": {
+    "name": "Guatemala",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "GW": {
+    "name": "Guinea-Bissau",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Portuguese"
+  },
+  "GY": {
+    "name": "Guyana",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "HN": {
+    "name": "Honduras",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "HR": {
+    "name": "Croatia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Croatian"
+  },
+  "HT": {
+    "name": "Haiti",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "HU": {
+    "name": "Hungary",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Hungarian"
+  },
+  "ID": {
+    "name": "Indonesia",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Indonesian"
+  },
+  "IE": {
+    "name": "Ireland",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "IL": {
+    "name": "Israel",
+    "region": "Middle East",
+    "religion": "Jewish",
+    "language": "Hebrew"
+  },
+  "IN": {
+    "name": "India",
+    "region": "Asia",
+    "religion": "Hindu",
+    "language": "Hindi"
+  },
+  "IQ": {
+    "name": "Iraq",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "IR": {
+    "name": "Iran, Islamic Republic of",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Persian"
+  },
+  "IS": {
+    "name": "Iceland",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Icelandic"
+  },
+  "IT": {
+    "name": "Italy",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Italian"
+  },
+  "JM": {
+    "name": "Jamaica",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "JO": {
+    "name": "Jordan",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "JP": {
+    "name": "Japan",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Japanese"
+  },
+  "KE": {
+    "name": "Kenya",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "KG": {
+    "name": "Kyrgyzstan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Russian"
+  },
+  "KH": {
+    "name": "Cambodia",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Khmer"
+  },
+  "KI": {
+    "name": "Kiribati",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "KM": {
+    "name": "Comoros",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "KN": {
+    "name": "Saint Kitts and Nevis",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "KP": {
+    "name": "North Korea",
+    "region": "Asia",
+    "religion": "Other",
+    "language": "Korean"
+  },
+  "KR": {
+    "name": "South Korea",
+    "region": "Asia",
+    "religion": "Christian",
+    "language": "Korean"
+  },
+  "KW": {
+    "name": "Kuwait",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "KZ": {
+    "name": "Kazakhstan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Russian"
+  },
+  "LA": {
+    "name": "Laos",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Lao"
+  },
+  "LB": {
+    "name": "Lebanon",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "LC": {
+    "name": "Saint Lucia",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "LI": {
+    "name": "Liechtenstein",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "German"
+  },
+  "LK": {
+    "name": "Sri Lanka",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Sinhala"
+  },
+  "LR": {
+    "name": "Liberia",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "LS": {
+    "name": "Lesotho",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "LT": {
+    "name": "Lithuania",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Lithuanian"
+  },
+  "LU": {
+    "name": "Luxembourg",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "LV": {
+    "name": "Latvia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Latvian"
+  },
+  "LY": {
+    "name": "Libya",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "MA": {
+    "name": "Morocco",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "MC": {
+    "name": "Monaco",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "MD": {
+    "name": "Moldova",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Romanian"
+  },
+  "ME": {
+    "name": "Montenegro",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Montenegrin"
+  },
+  "MG": {
+    "name": "Madagascar",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "MH": {
+    "name": "Marshall Islands",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "MK": {
+    "name": "North Macedonia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Macedonian"
+  },
+  "ML": {
+    "name": "Mali",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "MM": {
+    "name": "Myanmar",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Burmese"
+  },
+  "MN": {
+    "name": "Mongolia",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Mongolian"
+  },
+  "MR": {
+    "name": "Mauritania",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "MT": {
+    "name": "Malta",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Maltese"
+  },
+  "MU": {
+    "name": "Mauritius",
+    "region": "Africa",
+    "religion": "Hindu",
+    "language": "English"
+  },
+  "MV": {
+    "name": "Maldives",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Dhivehi"
+  },
+  "MW": {
+    "name": "Malawi",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "MX": {
+    "name": "Mexico",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "MY": {
+    "name": "Malaysia",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Malay"
+  },
+  "MZ": {
+    "name": "Mozambique",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "NA": {
+    "name": "Namibia",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "NE": {
+    "name": "Niger",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "NG": {
+    "name": "Nigeria",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "English"
+  },
+  "NI": {
+    "name": "Nicaragua",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "NL": {
+    "name": "Netherlands",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Dutch"
+  },
+  "NO": {
+    "name": "Norway",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Norwegian"
+  },
+  "NP": {
+    "name": "Nepal",
+    "region": "Asia",
+    "religion": "Hindu",
+    "language": "Nepali"
+  },
+  "NR": {
+    "name": "Nauru",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "NZ": {
+    "name": "New Zealand",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "OM": {
+    "name": "Oman",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "PA": {
+    "name": "Panama",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "PE": {
+    "name": "Peru",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "PG": {
+    "name": "Papua New Guinea",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "PH": {
+    "name": "Philippines",
+    "region": "Asia",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "PK": {
+    "name": "Pakistan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "English"
+  },
+  "PL": {
+    "name": "Poland",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Polish"
+  },
+  "PT": {
+    "name": "Portugal",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "PW": {
+    "name": "Palau",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "Palauan"
+  },
+  "PY": {
+    "name": "Paraguay",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "QA": {
+    "name": "Qatar",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "RO": {
+    "name": "Romania",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Romanian"
+  },
+  "RU": {
+    "name": "Russia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Russian"
+  },
+  "RW": {
+    "name": "Rwanda",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "SA": {
+    "name": "Saudi Arabia",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "SB": {
+    "name": "Solomon Islands",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "SC": {
+    "name": "Seychelles",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "SD": {
+    "name": "Sudan",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "SE": {
+    "name": "Sweden",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Swedish"
+  },
+  "SG": {
+    "name": "Singapore",
+    "region": "Asia",
+    "religion": "Other",
+    "language": "English"
+  },
+  "SI": {
+    "name": "Slovenia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Slovenian"
+  },
+  "SK": {
+    "name": "Slovakia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Slovak"
+  },
+  "SL": {
+    "name": "Sierra Leone",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "English"
+  },
+  "SM": {
+    "name": "San Marino",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Italian"
+  },
+  "SN": {
+    "name": "Senegal",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "SO": {
+    "name": "Somalia",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "SR": {
+    "name": "Suriname",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Dutch"
+  },
+  "SS": {
+    "name": "South Sudan",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Arabic"
+  },
+  "ST": {
+    "name": "Sao Tome and Principe",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "SV": {
+    "name": "El Salvador",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "SY": {
+    "name": "Syria",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "SZ": {
+    "name": "Eswatini",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "TD": {
+    "name": "Chad",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "TG": {
+    "name": "Togo",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "French"
+  },
+  "TH": {
+    "name": "Thailand",
+    "region": "Asia",
+    "religion": "Buddhist",
+    "language": "Thai"
+  },
+  "TJ": {
+    "name": "Tajikistan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Tajik"
+  },
+  "TL": {
+    "name": "Timor-Leste",
+    "region": "Asia",
+    "religion": "Christian",
+    "language": "Portuguese"
+  },
+  "TM": {
+    "name": "Turkmenistan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Turkmen"
+  },
+  "TN": {
+    "name": "Tunisia",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "TO": {
+    "name": "Tonga",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "TR": {
+    "name": "T\u00fcrkiye",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Turkish"
+  },
+  "TT": {
+    "name": "Trinidad and Tobago",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "TV": {
+    "name": "Tuvalu",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "TW": {
+    "name": "Taiwan",
+    "region": "Asia",
+    "religion": "Other",
+    "language": "Chinese"
+  },
+  "TZ": {
+    "name": "Tanzania",
+    "region": "Africa",
+    "religion": "Muslim",
+    "language": "English"
+  },
+  "UA": {
+    "name": "Ukraine",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Ukrainian"
+  },
+  "UG": {
+    "name": "Uganda",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "US": {
+    "name": "United States",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "UY": {
+    "name": "Uruguay",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "UZ": {
+    "name": "Uzbekistan",
+    "region": "Asia",
+    "religion": "Muslim",
+    "language": "Uzbek"
+  },
+  "VC": {
+    "name": "Saint Vincent and the Grenadines",
+    "region": "North America",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "VE": {
+    "name": "Venezuela",
+    "region": "South America",
+    "religion": "Christian",
+    "language": "Spanish"
+  },
+  "VN": {
+    "name": "Vietnam",
+    "region": "Asia",
+    "religion": "Other",
+    "language": "Vietnamese"
+  },
+  "VU": {
+    "name": "Vanuatu",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "French"
+  },
+  "WS": {
+    "name": "Samoa",
+    "region": "Oceania",
+    "religion": "Christian",
+    "language": "Samoan"
+  },
+  "YD": {
+    "name": "South Yemen",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "YE": {
+    "name": "Yemen",
+    "region": "Middle East",
+    "religion": "Muslim",
+    "language": "Arabic"
+  },
+  "YU": {
+    "name": "Yugoslavia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Serbo-Croatian"
+  },
+  "ZA": {
+    "name": "South Africa",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "ZM": {
+    "name": "Zambia",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "ZW": {
+    "name": "Zimbabwe",
+    "region": "Africa",
+    "religion": "Christian",
+    "language": "English"
+  },
+  "RS": {
+    "name": "Serbia",
+    "region": "Europe",
+    "religion": "Christian",
+    "language": "Serbian"
+  }
+}

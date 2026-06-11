@@ -6,6 +6,17 @@ const VOTE = { NO: 0, YES: 1, ABSTAIN: 2, ABSENT: 3 };
 const VOTE_KEY = { 0: 'no', 1: 'yes', 2: 'abstain', 3: 'absent' };
 const VOTE_SYMBOL = { 0: '−', 1: '+', 2: '×', 3: '•' };
 
+// Historical entities that voted in the UN but no longer exist as map shapes.
+// Guessing ANY of their listed successor states counts as guessing the
+// historical entity, and vice versa — guessing the historical code (if it
+// somehow appears as a "no" voter) is satisfied by any successor.
+const SUCCESSOR_MAP = {
+  YU: ['RS', 'ME', 'HR', 'SI', 'MK', 'BA'], // Yugoslavia / Serbia & Montenegro -> ex-Yugoslav states
+  CS: ['CZ', 'SK', 'RS', 'ME'],             // Czechoslovakia & Serbia/Montenegro share this code in the data
+  DD: ['DE'],                               // East Germany -> Germany
+  YD: ['YE'],                               // South Yemen -> Yemen
+};
+
 const state = {
   resolutions: [],
   countryMeta: {},
@@ -14,7 +25,7 @@ const state = {
   theme: 'light',
   user: null,             // {username, token}
   authMode: 'login',
-  hints: new Set(),
+  hints: new Map(), // category -> level (1 = summary, 2 = detailed)
 
   // game session
   session: null,
@@ -61,6 +72,15 @@ async function loadData() {
   state.countries = GeoEngine.build(topo).filter(c => c.path && c.id && state.countryMeta[c.id]);
   state.countryById = {};
   state.countries.forEach(c => state.countryById[c.id] = c);
+
+  // Some map geometries share an ISO code with a separate territory (e.g. Australia /
+  // Ashmore and Cartier Islands both use "AU") — dedupe by id for search/autocomplete.
+  const seen = new Set();
+  state.searchableCountries = state.countries.filter(c => {
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    return true;
+  });
 
   document.getElementById('poolCount').textContent =
     `${state.resolutions.length.toLocaleString()} resolutions in the archive — 1946 to 2019.`;
@@ -127,10 +147,12 @@ function initSetupScreen() {
   document.getElementById('startBtn').addEventListener('click', startSession);
 }
 
-// Toggle a hint on/off and keep all UI copies (setup screen + in-game chips) in sync.
+// Hints escalate: off -> level 1 (summary) -> level 2 (detailed). Once enabled,
+// a hint can't be turned back off — pressing again upgrades it to a better hint.
 function toggleHint(val) {
-  if (state.hints.has(val)) state.hints.delete(val);
-  else state.hints.add(val);
+  const current = state.hints.get(val) || 0;
+  const next = current >= 2 ? 2 : current + 1;
+  state.hints.set(val, next);
   syncHintControls();
   if (state.session && state.session.status === 'playing') {
     renderHints();
@@ -139,10 +161,18 @@ function toggleHint(val) {
 
 function syncHintControls() {
   document.querySelectorAll('[data-group="hints"] .choice').forEach(btn => {
-    btn.classList.toggle('is-active', state.hints.has(btn.dataset.value));
+    const level = state.hints.get(btn.dataset.value) || 0;
+    btn.classList.toggle('is-active', level > 0);
+    btn.classList.toggle('is-maxed', level >= 2);
   });
   document.querySelectorAll('#hintsToggleRow .hint-chip').forEach(chip => {
-    chip.classList.toggle('is-active', state.hints.has(chip.dataset.value));
+    const level = state.hints.get(chip.dataset.value) || 0;
+    chip.classList.toggle('is-active', level > 0);
+    chip.classList.toggle('is-maxed', level >= 2);
+    const base = chip.dataset.label;
+    if (level === 0) chip.textContent = base;
+    else if (level === 1) chip.textContent = `${base}: On (tap for more detail)`;
+    else chip.textContent = `${base}: Detailed`;
   });
 }
 
@@ -204,20 +234,46 @@ function buildSession(resolution) {
     else absentCountries.push(code);
   });
 
-  const noCount = noCountries.length;
+  // Build the list of "claims" the player needs to satisfy. A normal "no"
+  // voter is its own claim, satisfiable only by clicking that country.
+  // A historical entity (e.g. Yugoslavia, "YU") that no longer has a map
+  // shape becomes a claim satisfiable by clicking ANY of its modern
+  // successor states — and vice versa, clicking a successor state resolves
+  // the historical claim it descends from.
+  const noClaims = noCountries.map(code => {
+    const successors = SUCCESSOR_MAP[code];
+    return {
+      key: code,
+      satisfiedBy: successors ? new Set(successors) : new Set([code]),
+      isHistorical: !!successors,
+    };
+  });
+
+  // Reverse lookup: clickable map code -> claim(s) it can satisfy
+  const claimsByCode = {};
+  noClaims.forEach(claim => {
+    claim.satisfiedBy.forEach(code => {
+      (claimsByCode[code] = claimsByCode[code] || []).push(claim);
+    });
+  });
+
+  const noCount = noClaims.length;
   const maxGuesses = Math.max(noCount, Math.ceil(noCount * setup.difficulty.mult));
 
   return {
     resolution,
     votes,
     noCountries: new Set(noCountries),
+    noClaims,
+    claimsByCode,
     yesCountries,
     abstainCountries,
     absentCountries,
     maxGuesses,
     guessesUsed: 0,
-    guessedCorrect: new Set(),  // codes correctly identified as "no"
+    guessedCorrect: new Set(),  // claim keys correctly identified
     guessedWrong: [],           // codes guessed but not "no"
+    paintedCodes: new Set(),    // map codes painted as correct (for successor cases)
     startTime: null,
     elapsed: 0,
     status: 'playing', // playing | won | lost
@@ -339,17 +395,30 @@ function renderHints() {
   const s = state.session;
   const noCodes = [...s.noCountries];
 
-  if (state.hints.has('geography')) {
+  const geoLevel = state.hints.get('geography') || 0;
+  const relLevel = state.hints.get('religion') || 0;
+  const langLevel = state.hints.get('language') || 0;
+
+  if (geoLevel === 1) {
     panel.appendChild(buildHintBlock('Geography of Dissent', noCodes.map(c => state.countryMeta[c].region)));
+  } else if (geoLevel >= 2) {
+    panel.appendChild(buildDetailedHintBlock('Geography of Dissent — by Country', noCodes, c => state.countryMeta[c].region));
   }
-  if (state.hints.has('religion')) {
+
+  if (relLevel === 1) {
     panel.appendChild(buildHintBlock('Majority Faith of Dissent', noCodes.map(c => state.countryMeta[c].religion)));
+  } else if (relLevel >= 2) {
+    panel.appendChild(buildDetailedHintBlock('Majority Faith of Dissent — by Country', noCodes, c => state.countryMeta[c].religion));
   }
-  if (state.hints.has('language')) {
+
+  if (langLevel === 1) {
     panel.appendChild(buildHintBlock('Primary Language of Dissent', noCodes.map(c => state.countryMeta[c].language)));
+  } else if (langLevel >= 2) {
+    panel.appendChild(buildDetailedHintBlock('Primary Language of Dissent — by Country', noCodes, c => state.countryMeta[c].language));
   }
 }
 
+// Level 1: aggregate counts across all "no" voters (e.g. "Asia ×4")
 function buildHintBlock(title, values) {
   const counts = {};
   values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
@@ -360,6 +429,20 @@ function buildHintBlock(title, values) {
   const block = document.createElement('div');
   block.className = 'hint-block';
   block.innerHTML = `<p class="hint-title">${title}</p><div class="hint-tags">${tags}</div>`;
+  return block;
+}
+
+// Level 2: a tag per "no" voter, naming each country alongside its attribute —
+// only revealed for countries not yet correctly guessed, to keep some challenge.
+function buildDetailedHintBlock(title, codes, getValue) {
+  const s = state.session;
+  const tags = codes
+    .filter(code => !s.guessedCorrect.has(code))
+    .map(code => `<span class="hint-tag">${countryName(code)}: ${getValue(code)}</span>`)
+    .join('');
+  const block = document.createElement('div');
+  block.className = 'hint-block';
+  block.innerHTML = `<p class="hint-title">${title}</p><div class="hint-tags">${tags || '<span class="hint-tag">All found</span>'}</div>`;
   return block;
 }
 
@@ -377,6 +460,8 @@ const mapView = {
 };
 
 let svgEl, viewportEl, tooltipEl;
+let labelCache = [];
+let viewportRect = null;
 
 function renderMap() {
   svgEl = document.getElementById('mapSvg');
@@ -417,6 +502,20 @@ function renderMap() {
   svgEl.appendChild(shapesGroup);
   svgEl.appendChild(labelsGroup);
 
+  // Cache label geometry once — avoids repeated getAttribute/parseFloat calls
+  // on every pan/zoom frame.
+  labelCache = [];
+  labelsGroup.querySelectorAll('.country-label').forEach(el => {
+    labelCache.push({
+      el,
+      cx: parseFloat(el.getAttribute('x')),
+      cy: parseFloat(el.getAttribute('y')),
+      textLen: el.textContent.length,
+    });
+  });
+  viewportRect = viewportEl.getBoundingClientRect();
+  window.addEventListener('resize', () => { viewportRect = viewportEl.getBoundingClientRect(); });
+
   applyGuessedStyles();
   attachPanZoom();
   updateLabelVisibility();
@@ -442,12 +541,17 @@ function attachPanZoom() {
   let pinchDist = null;
   let rafPending = false;
 
+  let labelUpdateTimer = null;
   function scheduleApply() {
     if (rafPending) return;
     rafPending = true;
     requestAnimationFrame(() => {
-      applyViewBox();
+      svgEl.setAttribute('viewBox', `${mapView.x.toFixed(2)} ${mapView.y.toFixed(2)} ${mapView.w.toFixed(2)} ${mapView.h.toFixed(2)}`);
       rafPending = false;
+      // Label overlap recalculation is the expensive part — debounce it so
+      // rapid wheel/drag events don't trigger it on every single frame.
+      clearTimeout(labelUpdateTimer);
+      labelUpdateTimer = setTimeout(updateLabelVisibility, 80);
     });
   }
 
@@ -575,30 +679,30 @@ function applyViewBox() {
   updateLabelVisibility();
 }
 
-// Show country labels only when zoomed in enough, with simple overlap avoidance
+// Show country labels only when zoomed in enough that names won't overlap.
 function updateLabelVisibility() {
-  const labels = svgEl.querySelectorAll('.country-label');
   const zoomRatio = BASE_W / mapView.w; // >1 means zoomed in
   const threshold = 1.6;
   if (zoomRatio < threshold) {
-    labels.forEach(l => l.classList.remove('visible'));
+    if (labelsHiddenAll) return;
+    labelCache.forEach(item => item.el.classList.remove('visible'));
+    labelsHiddenAll = true;
     return;
   }
+  labelsHiddenAll = false;
 
-  const rect = viewportEl.getBoundingClientRect();
+  const rect = viewportRect || viewportEl.getBoundingClientRect();
   const vw = rect.width, vh = rect.height;
 
   const visible = [];
-  labels.forEach(l => {
-    const cx = parseFloat(l.getAttribute('x'));
-    const cy = parseFloat(l.getAttribute('y'));
-    const screenX = (cx - mapView.x) / mapView.w * vw;
-    const screenY = (cy - mapView.y) / mapView.h * vh;
+  labelCache.forEach(item => {
+    const screenX = (item.cx - mapView.x) / mapView.w * vw;
+    const screenY = (item.cy - mapView.y) / mapView.h * vh;
     if (screenX < -50 || screenX > vw + 50 || screenY < -20 || screenY > vh + 20) {
-      l.classList.remove('visible');
+      item.el.classList.remove('visible');
       return;
     }
-    visible.push({ el: l, x: screenX, y: screenY, w: (l.textContent.length * 6.2 * zoomRatio / 6) });
+    visible.push({ el: item.el, x: screenX, y: screenY, w: (item.textLen * 6.2 * zoomRatio / 6) });
   });
 
   visible.sort((a, b) => a.w - b.w);
@@ -616,6 +720,7 @@ function updateLabelVisibility() {
     }
   });
 }
+let labelsHiddenAll = false;
 
 // ============================================================
 // GUESSING LOGIC
@@ -624,20 +729,26 @@ function updateLabelVisibility() {
 function onCountryClick(code) {
   const s = state.session;
   if (!s || s.status !== 'playing') return;
-  if (s.guessedCorrect.has(code)) return; // already found
+  if (s.paintedCodes.has(code)) return; // already painted (correct or wrong)
   if (s.guessedWrong.includes(code)) return; // already tried
 
-  const actual = s.votes[code]; // 0=no,1=yes,2=abstain, undefined=absent
-  const actualKey = actual === undefined ? VOTE.ABSENT : actual;
+  // Does this code satisfy any not-yet-found claim (its own "no" vote, or a
+  // historical entity it's a successor of)?
+  const candidateClaims = s.claimsByCode[code] || [];
+  const claim = candidateClaims.find(c => !s.guessedCorrect.has(c.key));
 
-  s.guessesUsed++;
-
-  if (actualKey === VOTE.NO) {
-    s.guessedCorrect.add(code);
+  if (claim) {
+    // Correct guess — doesn't cost a guess, even at 0 remaining.
+    s.guessedCorrect.add(claim.key);
+    s.paintedCodes.add(code);
     paintCountry(code, 'no', true);
     s.feed.push({ code, result: 'correct', actual: VOTE.NO });
   } else {
+    const actual = s.votes[code]; // 0=no,1=yes,2=abstain, undefined=absent
+    const actualKey = actual === undefined ? VOTE.ABSENT : actual;
+    s.guessesUsed++;
     s.guessedWrong.push(code);
+    s.paintedCodes.add(code);
     paintCountry(code, VOTE_KEY[actualKey], true);
     s.feed.push({ code, result: 'wrong', actual: actualKey });
   }
@@ -646,7 +757,7 @@ function onCountryClick(code) {
   updateBallotCounts();
   updateHud();
 
-  if (s.guessedCorrect.size >= s.noCountries.size) {
+  if (s.guessedCorrect.size >= s.noClaims.length) {
     endSession(true);
   } else if (s.guessesUsed >= s.maxGuesses) {
     endSession(false);
@@ -666,27 +777,29 @@ function paintCountry(code, voteKey, flash) {
 function applyGuessedStyles() {
   const s = state.session;
   if (!s) return;
-  s.guessedCorrect.forEach(code => paintCountry(code, 'no', false));
-  s.guessedWrong.forEach((code, i) => {
-    const entry = s.feed.find(f => f.code === code);
-    const voteKey = entry ? VOTE_KEY[entry.actual] : 'yes';
-    paintCountry(code, voteKey, false);
+  s.feed.forEach(item => {
+    const voteKey = item.result === 'correct' ? 'no' : VOTE_KEY[item.actual];
+    paintCountry(item.code, voteKey, false);
   });
 }
 
 function revealAll() {
   const s = state.session;
-  s.noCountries.forEach(code => {
-    if (!s.guessedCorrect.has(code)) {
+  s.noClaims.forEach(claim => {
+    if (s.guessedCorrect.has(claim.key)) return;
+    // Reveal every map-clickable successor (or the country itself) that
+    // wasn't already painted from a wrong guess.
+    claim.satisfiedBy.forEach(code => {
+      if (s.paintedCodes.has(code)) return;
       const path = svgEl.querySelector(`.country-shape[data-code="${code}"]`);
       if (path) path.classList.add('revealed-no');
-    }
+    });
   });
 }
 
 function updateBallotCounts() {
   const s = state.session;
-  document.getElementById('countNo').textContent = `${s.guessedCorrect.size} / ${s.noCountries.size}`;
+  document.getElementById('countNo').textContent = `${s.guessedCorrect.size} / ${s.noClaims.length}`;
 }
 
 // ---------- Guess feed ----------
@@ -724,7 +837,7 @@ function showResults() {
     ? 'You found every dissenting vote.'
     : 'Out of guesses.';
   document.getElementById('resultAccuracy').textContent = `${accuracy}%`;
-  document.getElementById('resultFound').textContent = `${s.guessedCorrect.size} / ${s.noCountries.size}`;
+  document.getElementById('resultFound').textContent = `${s.guessedCorrect.size} / ${s.noClaims.length}`;
   document.getElementById('resultTime').textContent = fmtTime(s.elapsed);
   document.getElementById('resultGuesses').textContent = `${s.guessesUsed} / ${s.maxGuesses}`;
 
@@ -732,34 +845,69 @@ function showResults() {
   status.hidden = false;
   status.classList.add(won ? 'win' : 'lose');
   status.textContent = won
-    ? `Found all ${s.noCountries.size} dissenting votes with ${s.maxGuesses - s.guessesUsed} guesses to spare.`
-    : `${s.guessedCorrect.size} of ${s.noCountries.size} dissenters found before running out of guesses.`;
+    ? `Found all ${s.noClaims.length} dissenting votes with ${s.maxGuesses - s.guessesUsed} wrong guesses to spare.`
+    : `${s.guessedCorrect.size} of ${s.noClaims.length} dissenters found before running out of guesses.`;
 
   renderResultsRecap(s, won);
 
   document.getElementById('resultsOverlay').hidden = false;
 }
 
+// Display name for a "no" claim — historical entities are shown by name with
+// their modern successor states listed alongside.
+function claimDisplayName(claim) {
+  if (!claim.isHistorical) return countryName(claim.key);
+  const meta = state.countryMeta[claim.key];
+  const successors = [...claim.satisfiedBy].map(c => countryName(c)).join(' / ');
+  return `${meta ? meta.name : claim.key} (${successors})`;
+}
+function claimFlagCode(claim) {
+  if (!claim.isHistorical) return claim.key;
+  return [...claim.satisfiedBy][0];
+}
+
 function renderResultsRecap(s, won) {
   const recap = document.getElementById('resultsRecap');
-  const { resolution, noCountries, guessedCorrect } = s;
+  const { resolution, noClaims, guessedCorrect } = s;
 
   let html = `
     <h3 class="results-recap-title">${toTitleCase(resolution.short || resolution.descr || 'Untitled Resolution')}</h3>
     <p class="results-recap-meta">${formatDate(resolution.date)} · ${resolution.issues.length ? resolution.issues.join(', ') : 'General'}</p>
-    <p class="results-recap-desc">${toTitleCase(resolution.descr || '')}</p>
+    <p class="results-recap-desc${isPlaceholderDescr(resolution) ? ' is-placeholder' : ''}">${recapDescription(resolution)}</p>
   `;
 
-  const missed = [...noCountries].filter(code => !guessedCorrect.has(code));
+  const missed = noClaims.filter(claim => !guessedCorrect.has(claim.key));
   if (!won && missed.length) {
     html += `<div class="recap-missed"><span class="recap-missed-label">Countries You Missed</span>`;
-    missed.forEach(code => {
-      html += `<span class="recap-chip"><img src="${flagUrl(code)}" alt="">${countryName(code)}</span>`;
+    missed.forEach(claim => {
+      html += `<span class="recap-chip"><img src="${flagUrl(claimFlagCode(claim))}" alt="">${claimDisplayName(claim)}</span>`;
     });
     html += `</div>`;
   }
 
   recap.innerHTML = html;
+}
+
+// Many archive entries have no real description — just a repeat of the
+// catalogue title (e.g. "Human Rights Council: resolution / adopted by the
+// General Assembly"). Detect that and fall back to a useful summary built
+// from the resolution's topic/date instead of showing the unhelpful text.
+function isPlaceholderDescr(resolution) {
+  const d = (resolution.descr || '').trim().toLowerCase();
+  const s = (resolution.short || '').trim().toLowerCase();
+  if (!d) return true;
+  if (d === s) return true;
+  if (d.startsWith('resolution / adopted') || d.startsWith('resolution adopted')) return true;
+  if (d.length < 25) return true;
+  return false;
+}
+
+function recapDescription(resolution) {
+  if (!isPlaceholderDescr(resolution)) return toTitleCase(resolution.descr);
+  const topic = resolution.issues && resolution.issues.length ? resolution.issues.join(', ') : 'general business';
+  return `No detailed description is available for this resolution in the archive. ` +
+    `Based on its catalogue entry, it concerns ${topic.toLowerCase()} and was adopted on ${formatDate(resolution.date)}. ` +
+    `Use the vote breakdown on the left as your main clue.`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -768,9 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('playAgainBtn').addEventListener('click', () => {
     document.getElementById('resultsOverlay').hidden = true;
-    document.getElementById('gameScreen').hidden = true;
-    document.getElementById('setupScreen').hidden = false;
-    updatePoolCount();
+    startSession();
   });
   document.getElementById('quitBtn').addEventListener('click', () => {
     if (!state.session || state.session.status !== 'playing') {
@@ -1080,11 +1226,11 @@ function initCountrySearch() {
     if (!q) { results.hidden = true; results.innerHTML = ''; return; }
 
     const s = state.session;
-    const matches = state.countries
+    const matches = state.searchableCountries
       .filter(c => state.countryMeta[c.id])
       .filter(c => {
         if (s) {
-          if (s.guessedCorrect.has(c.id) || s.guessedWrong.includes(c.id)) return false;
+          if (s.paintedCodes.has(c.id)) return false;
         }
         return countryName(c.id).toLowerCase().includes(q);
       })
