@@ -34,12 +34,30 @@ const GeoEngine = (() => {
   }
 
   function ringToPath(ring) {
-    let d = '';
-    ring.forEach((pt, i) => {
+    // Split the ring into separate subpaths wherever projected x jumps by
+    // more than half the map width — this happens when a ring crosses the
+    // antimeridian (lon ±180), which would otherwise draw a long horizontal
+    // seam line across the entire map.
+    const JUMP = WIDTH / 2;
+    let segments = [[]];
+    let prev = null;
+    ring.forEach(pt => {
       const [x, y] = project(pt);
-      d += (i === 0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2) + ' ';
+      if (prev !== null && Math.abs(x - prev[0]) > JUMP) {
+        segments.push([]);
+      }
+      segments[segments.length - 1].push([x, y]);
+      prev = [x, y];
     });
-    d += 'Z';
+
+    let d = '';
+    segments.forEach(seg => {
+      if (seg.length < 2) return;
+      seg.forEach((pt, i) => {
+        d += (i === 0 ? 'M' : 'L') + pt[0].toFixed(2) + ',' + pt[1].toFixed(2) + ' ';
+      });
+      d += 'Z';
+    });
     return d;
   }
 

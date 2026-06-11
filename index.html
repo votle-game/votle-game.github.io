@@ -6,7 +6,7 @@
 <title>Votle — Guess the Vote</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,10 +14,10 @@
 <!-- ============ TOP BAR ============ -->
 <header class="topbar">
   <div class="topbar-left">
-    <div class="brand">
-      <span class="brand-mark">⬡</span>
+    <button class="brand" id="brandBtn" title="Back to setup">
+      <span class="brand-mark">🌍</span>
       <span class="brand-name">Votle</span>
-    </div>
+    </button>
   </div>
   <div class="topbar-right">
     <button class="icon-btn" id="statsBtn" title="Statistics" aria-label="Statistics">
@@ -72,7 +72,7 @@
         <div class="choice-row" data-group="era">
           <button class="choice is-active" data-value="any">
             <span class="choice-name">Any Era</span>
-            <span class="choice-meta">1946 – 2020</span>
+            <span class="choice-meta">1946 – 2019</span>
           </button>
           <button class="choice" data-value="cold-war">
             <span class="choice-name">Cold War</span>
@@ -80,7 +80,7 @@
           </button>
           <button class="choice" data-value="modern">
             <span class="choice-name">Modern Era</span>
-            <span class="choice-meta">1992 – 2020</span>
+            <span class="choice-meta">1992 – 2019</span>
           </button>
         </div>
       </section>
@@ -165,6 +165,17 @@
         <span class="meta-label">Topic</span>
         <span class="meta-value" id="resTopic">—</span>
       </div>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="countrySearch" placeholder="Type a country to guess…" autocomplete="off">
+      <div class="search-results" id="searchResults" hidden></div>
+    </div>
+
+    <div class="hints-toggle-row" id="hintsToggleRow">
+      <button class="hint-chip" data-value="geography">Geography Hint</button>
+      <button class="hint-chip" data-value="religion">Religion Hint</button>
+      <button class="hint-chip" data-value="language">Language Hint</button>
     </div>
 
     <div class="tally" id="tally">
@@ -256,6 +267,7 @@
         <span class="result-stat-label">Guesses Used</span>
       </div>
     </div>
+    <div class="results-recap" id="resultsRecap"></div>
     <div class="results-actions">
       <button class="btn-secondary" id="reviewMapBtn">Review Map</button>
       <button class="btn-primary" id="playAgainBtn">Play Again</button>

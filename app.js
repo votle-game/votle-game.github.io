@@ -63,7 +63,7 @@ async function loadData() {
   state.countries.forEach(c => state.countryById[c.id] = c);
 
   document.getElementById('poolCount').textContent =
-    `${state.resolutions.length.toLocaleString()} resolutions in the archive — 1946 to 2020.`;
+    `${state.resolutions.length.toLocaleString()} resolutions in the archive — 1946 to 2019.`;
 }
 
 // ---------- Helpers ----------
@@ -74,9 +74,10 @@ function fmtTime(totalSeconds) {
 }
 
 function flagUrl(alpha2) {
-  // flagcdn.com — free, no auth, ISO 3166-1 alpha-2 (lowercase)
+  // flagcdn.com — free, no auth, ISO 3166-1 alpha-2 (lowercase).
+  // w40 gives a properly proportioned flag (not cropped/distorted at the edges).
   const code = alpha2.toLowerCase();
-  return `https://flagcdn.com/24x18/${code}.png`;
+  return `https://flagcdn.com/w40/${code}.png`;
 }
 
 function countryName(code) {
@@ -119,20 +120,44 @@ function initSetupScreen() {
     row.addEventListener('click', e => {
       const btn = e.target.closest('.choice');
       if (!btn) return;
-      btn.classList.toggle('is-active');
-      const val = btn.dataset.value;
-      if (state.hints.has(val)) state.hints.delete(val);
-      else state.hints.add(val);
+      toggleHint(btn.dataset.value);
     });
   });
 
   document.getElementById('startBtn').addEventListener('click', startSession);
 }
 
+// Toggle a hint on/off and keep all UI copies (setup screen + in-game chips) in sync.
+function toggleHint(val) {
+  if (state.hints.has(val)) state.hints.delete(val);
+  else state.hints.add(val);
+  syncHintControls();
+  if (state.session && state.session.status === 'playing') {
+    renderHints();
+  }
+}
+
+function syncHintControls() {
+  document.querySelectorAll('[data-group="hints"] .choice').forEach(btn => {
+    btn.classList.toggle('is-active', state.hints.has(btn.dataset.value));
+  });
+  document.querySelectorAll('#hintsToggleRow .hint-chip').forEach(chip => {
+    chip.classList.toggle('is-active', state.hints.has(chip.dataset.value));
+  });
+}
+
+function initInGameHints() {
+  document.getElementById('hintsToggleRow').addEventListener('click', e => {
+    const chip = e.target.closest('.hint-chip');
+    if (!chip) return;
+    toggleHint(chip.dataset.value);
+  });
+}
+
 function eraRange(era) {
   if (era === 'cold-war') return ['1946-01-01', '1991-12-31'];
-  if (era === 'modern') return ['1992-01-01', '2020-12-31'];
-  return ['1946-01-01', '2020-12-31'];
+  if (era === 'modern') return ['1992-01-01', '2019-12-31'];
+  return ['1946-01-01', '2019-12-31'];
 }
 
 function getPool() {
@@ -211,6 +236,7 @@ function startSession() {
   document.getElementById('resultsOverlay').hidden = true;
 
   renderBallot();
+  syncHintControls();
   renderHints();
   renderMap();
   resetMapView();
@@ -341,12 +367,13 @@ function buildHintBlock(title, values) {
 // MAP
 // ============================================================
 
+const BASE_W = 960, BASE_H = 500;
+
 const mapView = {
-  scale: 1,
-  tx: 0,
-  ty: 0,
-  minScale: 1,
-  maxScale: 12,
+  x: 0, y: 0,
+  w: BASE_W, h: BASE_H,
+  minW: 80,    // most-zoomed-in viewBox width (≈12x)
+  maxW: BASE_W, // fully zoomed out
 };
 
 let svgEl, viewportEl, tooltipEl;
@@ -357,14 +384,12 @@ function renderMap() {
   tooltipEl = document.getElementById('mapTooltip');
 
   svgEl.innerHTML = '';
-  svgEl.setAttribute('viewBox', `0 0 ${GeoEngine.WIDTH} ${GeoEngine.HEIGHT}`);
+  svgEl.setAttribute('viewBox', `0 0 ${BASE_W} ${BASE_H}`);
 
   const shapesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   shapesGroup.setAttribute('id', 'shapesGroup');
   const labelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   labelsGroup.setAttribute('id', 'labelsGroup');
-  const stampsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  stampsGroup.setAttribute('id', 'stampsGroup');
 
   state.countries.forEach(c => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -391,7 +416,6 @@ function renderMap() {
 
   svgEl.appendChild(shapesGroup);
   svgEl.appendChild(labelsGroup);
-  svgEl.appendChild(stampsGroup);
 
   applyGuessedStyles();
   attachPanZoom();
@@ -411,19 +435,30 @@ function hideTooltip() {
   tooltipEl.hidden = true;
 }
 
-// ---------- Pan / Zoom ----------
+// ---------- Pan / Zoom (viewBox-based — no per-element restyling) ----------
 function attachPanZoom() {
   let dragging = false;
   let lastX, lastY;
   let pinchDist = null;
+  let rafPending = false;
+
+  function scheduleApply() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      applyViewBox();
+      rafPending = false;
+    });
+  }
 
   viewportEl.onwheel = e => {
     e.preventDefault();
     const rect = viewportEl.getBoundingClientRect();
     const cx = e.clientX - rect.left;
     const cy = e.clientY - rect.top;
-    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-    zoomAt(cx, cy, factor);
+    const factor = e.deltaY < 0 ? 1 / 1.15 : 1.15;
+    zoomAt(cx, cy, rect, factor);
+    scheduleApply();
   };
 
   viewportEl.onmousedown = e => {
@@ -437,6 +472,7 @@ function attachPanZoom() {
     const dy = e.clientY - lastY;
     lastX = e.clientX; lastY = e.clientY;
     pan(dx, dy);
+    scheduleApply();
   });
   window.addEventListener('mouseup', () => {
     dragging = false;
@@ -459,14 +495,16 @@ function attachPanZoom() {
       const dy = e.touches[0].clientY - lastY;
       lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
       pan(dx, dy);
+      scheduleApply();
     } else if (e.touches.length === 2 && pinchDist != null) {
       const newDist = touchDist(e.touches);
-      const factor = newDist / pinchDist;
+      const factor = pinchDist / newDist;
       pinchDist = newDist;
       const rect = viewportEl.getBoundingClientRect();
       const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
       const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
-      zoomAt(cx, cy, factor);
+      zoomAt(cx, cy, rect, factor);
+      scheduleApply();
     }
   }, { passive: true });
 
@@ -474,11 +512,13 @@ function attachPanZoom() {
 
   document.getElementById('zoomInBtn').onclick = () => {
     const rect = viewportEl.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, 1.4);
+    zoomAt(rect.width / 2, rect.height / 2, rect, 1 / 1.4);
+    scheduleApply();
   };
   document.getElementById('zoomOutBtn').onclick = () => {
     const rect = viewportEl.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, 1 / 1.4);
+    zoomAt(rect.width / 2, rect.height / 2, rect, 1.4);
+    scheduleApply();
   };
   document.getElementById('resetViewBtn').onclick = resetMapView;
 }
@@ -489,68 +529,62 @@ function touchDist(touches) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function pan(dx, dy) {
-  mapView.tx += dx;
-  mapView.ty += dy;
-  applyTransform();
+// Pan by screen-space pixel delta — convert to viewBox units using current scale.
+function pan(dxScreen, dyScreen) {
+  const rect = viewportEl.getBoundingClientRect();
+  const scaleX = mapView.w / rect.width;
+  const scaleY = mapView.h / rect.height;
+  mapView.x -= dxScreen * scaleX;
+  mapView.y -= dyScreen * scaleY;
+  clampView();
 }
 
-function zoomAt(cx, cy, factor) {
-  const newScale = Math.min(mapView.maxScale, Math.max(mapView.minScale, mapView.scale * factor));
-  const realFactor = newScale / mapView.scale;
-  mapView.tx = cx - (cx - mapView.tx) * realFactor;
-  mapView.ty = cy - (cy - mapView.ty) * realFactor;
-  mapView.scale = newScale;
-  applyTransform();
-  updateLabelVisibility();
+// Zoom toward a screen-space point (cx, cy) by `factor` (>1 = zoom out, <1 = zoom in)
+function zoomAt(cx, cy, rect, factor) {
+  const newW = Math.min(mapView.maxW, Math.max(mapView.minW, mapView.w * factor));
+  const realFactor = newW / mapView.w;
+  const newH = mapView.h * realFactor;
+
+  // Point under cursor, in viewBox coords, before zoom
+  const px = mapView.x + (cx / rect.width) * mapView.w;
+  const py = mapView.y + (cy / rect.height) * mapView.h;
+
+  mapView.w = newW;
+  mapView.h = newH;
+  mapView.x = px - (cx / rect.width) * newW;
+  mapView.y = py - (cy / rect.height) * newH;
+  clampView();
+}
+
+function clampView() {
+  // Don't allow panning past the map edges
+  mapView.x = Math.min(Math.max(mapView.x, -mapView.w * 0.15), BASE_W - mapView.w * 0.85);
+  mapView.y = Math.min(Math.max(mapView.y, -mapView.h * 0.4), BASE_H - mapView.h * 0.6);
 }
 
 function resetMapView() {
-  mapView.scale = 1;
-  mapView.tx = 0;
-  mapView.ty = 0;
-  applyTransform();
-  updateLabelVisibility();
+  mapView.w = BASE_W;
+  mapView.h = BASE_H;
+  mapView.x = 0;
+  mapView.y = 0;
+  applyViewBox();
 }
 
-function applyTransform() {
-  const g1 = svgEl.querySelector('#shapesGroup');
-  const g2 = svgEl.querySelector('#labelsGroup');
-  const g3 = svgEl.querySelector('#stampsGroup');
-  const t = `translate(${mapView.tx}px, ${mapView.ty}px) scale(${mapView.scale})`;
-  [g1, g2, g3].forEach(g => {
-    g.style.transform = t;
-    g.style.transformOrigin = '0 0';
-    g.style.transformBox = 'fill-box';
-  });
-  // SVG groups need transform attr too for cross-browser fill-box quirks; use transform attr instead
-  [g1, g2, g3].forEach(g => {
-    g.removeAttribute('style');
-    g.setAttribute('transform', `translate(${mapView.tx} ${mapView.ty}) scale(${mapView.scale})`);
-  });
-  // Keep stroke widths and font sizes visually consistent regardless of zoom
-  const strokeW = (0.5 / mapView.scale).toFixed(3);
-  g1.querySelectorAll('.country-shape').forEach(p => p.style.strokeWidth = strokeW);
-  const fontSize = (5.5 / mapView.scale).toFixed(2);
-  g2.querySelectorAll('.country-label').forEach(t => {
-    t.style.fontSize = fontSize + 'px';
-    t.style.strokeWidth = (3 / mapView.scale).toFixed(2) + 'px';
-  });
-  g3.querySelectorAll('.stamp').forEach(t => {
-    t.style.fontSize = (10 / mapView.scale).toFixed(2) + 'px';
-  });
+function applyViewBox() {
+  svgEl.setAttribute('viewBox', `${mapView.x.toFixed(2)} ${mapView.y.toFixed(2)} ${mapView.w.toFixed(2)} ${mapView.h.toFixed(2)}`);
+  updateLabelVisibility();
 }
 
 // Show country labels only when zoomed in enough, with simple overlap avoidance
 function updateLabelVisibility() {
   const labels = svgEl.querySelectorAll('.country-label');
+  const zoomRatio = BASE_W / mapView.w; // >1 means zoomed in
   const threshold = 1.6;
-  if (mapView.scale < threshold) {
+  if (zoomRatio < threshold) {
     labels.forEach(l => l.classList.remove('visible'));
     return;
   }
-  // Show all labels whose centroid is within the visible viewport, with basic
-  // bbox-overlap suppression (sorted by length so short names win ties).
+
   const rect = viewportEl.getBoundingClientRect();
   const vw = rect.width, vh = rect.height;
 
@@ -558,15 +592,13 @@ function updateLabelVisibility() {
   labels.forEach(l => {
     const cx = parseFloat(l.getAttribute('x'));
     const cy = parseFloat(l.getAttribute('y'));
-    const sx = cx * mapView.scale + mapView.tx;
-    const sy = cy * mapView.scale + mapView.ty;
-    const screenX = sx / GeoEngine.WIDTH * vw;
-    const screenY = sy / GeoEngine.HEIGHT * vh;
+    const screenX = (cx - mapView.x) / mapView.w * vw;
+    const screenY = (cy - mapView.y) / mapView.h * vh;
     if (screenX < -50 || screenX > vw + 50 || screenY < -20 || screenY > vh + 20) {
       l.classList.remove('visible');
       return;
     }
-    visible.push({ el: l, x: screenX, y: screenY, w: (l.textContent.length * 6.2) });
+    visible.push({ el: l, x: screenX, y: screenY, w: (l.textContent.length * 6.2 * zoomRatio / 6) });
   });
 
   visible.sort((a, b) => a.w - b.w);
@@ -598,12 +630,13 @@ function onCountryClick(code) {
   const actual = s.votes[code]; // 0=no,1=yes,2=abstain, undefined=absent
   const actualKey = actual === undefined ? VOTE.ABSENT : actual;
 
+  s.guessesUsed++;
+
   if (actualKey === VOTE.NO) {
     s.guessedCorrect.add(code);
     paintCountry(code, 'no', true);
     s.feed.push({ code, result: 'correct', actual: VOTE.NO });
   } else {
-    s.guessesUsed++;
     s.guessedWrong.push(code);
     paintCountry(code, VOTE_KEY[actualKey], true);
     s.feed.push({ code, result: 'wrong', actual: actualKey });
@@ -628,17 +661,6 @@ function paintCountry(code, voteKey, flash) {
   void path.offsetWidth;
   path.classList.add(`guessed-${voteKey}`);
   if (flash) path.classList.add('flash');
-
-  const country = state.countryById[code];
-  if (country && country.centroid) {
-    const stampsGroup = svgEl.querySelector('#stampsGroup');
-    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    t.setAttribute('x', country.centroid[0]);
-    t.setAttribute('y', country.centroid[1]);
-    t.setAttribute('class', `stamp stamp-${voteKey}`);
-    t.textContent = VOTE_SYMBOL[{no:0,yes:1,abstain:2,absent:3}[voteKey]];
-    stampsGroup.appendChild(t);
-  }
 }
 
 function applyGuessedStyles() {
@@ -674,7 +696,7 @@ function renderGuessFeed() {
   const recent = state.session.feed.slice(-8);
   recent.forEach(item => {
     const div = document.createElement('div');
-    div.className = 'guess-item' + (item.result === 'wrong' ? ' gi-wrong' : '');
+    div.className = 'guess-item';
     const iconClass = `gi-${VOTE_KEY[item.actual]}`;
     const symbol = VOTE_SYMBOL[item.actual];
     div.innerHTML = `
@@ -713,7 +735,31 @@ function showResults() {
     ? `Found all ${s.noCountries.size} dissenting votes with ${s.maxGuesses - s.guessesUsed} guesses to spare.`
     : `${s.guessedCorrect.size} of ${s.noCountries.size} dissenters found before running out of guesses.`;
 
+  renderResultsRecap(s, won);
+
   document.getElementById('resultsOverlay').hidden = false;
+}
+
+function renderResultsRecap(s, won) {
+  const recap = document.getElementById('resultsRecap');
+  const { resolution, noCountries, guessedCorrect } = s;
+
+  let html = `
+    <h3 class="results-recap-title">${toTitleCase(resolution.short || resolution.descr || 'Untitled Resolution')}</h3>
+    <p class="results-recap-meta">${formatDate(resolution.date)} · ${resolution.issues.length ? resolution.issues.join(', ') : 'General'}</p>
+    <p class="results-recap-desc">${toTitleCase(resolution.descr || '')}</p>
+  `;
+
+  const missed = [...noCountries].filter(code => !guessedCorrect.has(code));
+  if (!won && missed.length) {
+    html += `<div class="recap-missed"><span class="recap-missed-label">Countries You Missed</span>`;
+    missed.forEach(code => {
+      html += `<span class="recap-chip"><img src="${flagUrl(code)}" alt="">${countryName(code)}</span>`;
+    });
+    html += `</div>`;
+  }
+
+  recap.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1001,6 +1047,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   initAuth();
   initStats();
   initSetupScreen();
+  initInGameHints();
+  initCountrySearch();
+
+  document.getElementById('brandBtn').addEventListener('click', () => {
+    if (state.session && state.session.status === 'playing') {
+      if (!confirm('End this session early? Your progress will be lost.')) return;
+      stopTimer();
+    }
+    backToSetup();
+  });
 
   try {
     await loadData();
@@ -1010,3 +1066,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error(err);
   }
 });
+
+// ============================================================
+// COUNTRY SEARCH / AUTOCOMPLETE
+// ============================================================
+
+function initCountrySearch() {
+  const input = document.getElementById('countrySearch');
+  const results = document.getElementById('searchResults');
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { results.hidden = true; results.innerHTML = ''; return; }
+
+    const s = state.session;
+    const matches = state.countries
+      .filter(c => state.countryMeta[c.id])
+      .filter(c => {
+        if (s) {
+          if (s.guessedCorrect.has(c.id) || s.guessedWrong.includes(c.id)) return false;
+        }
+        return countryName(c.id).toLowerCase().includes(q);
+      })
+      .sort((a, b) => countryName(a.id).localeCompare(countryName(b.id)))
+      .slice(0, 8);
+
+    if (!matches.length) {
+      results.innerHTML = '<div class="search-result-empty">No matching countries</div>';
+    } else {
+      results.innerHTML = matches.map(c => `
+        <div class="search-result" data-code="${c.id}">
+          <img src="${flagUrl(c.id)}" alt="">
+          <span>${countryName(c.id)}</span>
+        </div>
+      `).join('');
+    }
+    results.hidden = false;
+  });
+
+  results.addEventListener('click', e => {
+    const item = e.target.closest('.search-result[data-code]');
+    if (!item) return;
+    const code = item.dataset.code;
+    onCountryClick(code);
+    input.value = '';
+    results.hidden = true;
+    results.innerHTML = '';
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const first = results.querySelector('.search-result[data-code]');
+      if (first) {
+        onCountryClick(first.dataset.code);
+        input.value = '';
+        results.hidden = true;
+        results.innerHTML = '';
+      }
+    } else if (e.key === 'Escape') {
+      results.hidden = true;
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) results.hidden = true;
+  });
+}
