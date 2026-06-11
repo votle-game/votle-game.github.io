@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votle — Guess the Vote</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand">
+      <span class="brand-mark">⬡</span>
+      <span class="brand-name">Votle</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" id="statsBtn" title="Statistics" aria-label="Statistics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 19V10M12 19V5M19 19v-7"/></svg>
+    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="account-btn" id="accountBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+      <span id="accountLabel">Sign In</span>
+    </button>
+  </div>
+</header>
+
+<!-- ============ SETUP SCREEN ============ -->
+<main class="screen" id="setupScreen">
+  <div class="setup-wrap">
+
+    <section class="hero">
+      <h1 class="hero-title">Read the room.<br>Guess the vote.</h1>
+      <p class="hero-sub">Every resolution ever brought before the UN General Assembly — placed in front of you. Mark the floor: who stood <em>in favour</em>, who <em>abstained</em>, who voted <em>against</em>, and who never showed up.</p>
+    </section>
+
+    <div class="setup-grid">
+
+      <!-- Difficulty -->
+      <section class="setup-card" id="difficultyCard">
+        <h2 class="card-title"><span class="card-eyebrow">01</span>Difficulty</h2>
+        <p class="card-desc">Sets how many guesses you get, relative to the number of countries that voted against.</p>
+        <div class="choice-row" data-group="difficulty">
+          <button class="choice" data-value="generous" data-mult="2.5">
+            <span class="choice-name">Generous</span>
+            <span class="choice-meta">2.5× the &quot;against&quot; count</span>
+          </button>
+          <button class="choice is-active" data-value="standard" data-mult="1.5">
+            <span class="choice-name">Standard</span>
+            <span class="choice-meta">1.5× the &quot;against&quot; count</span>
+          </button>
+          <button class="choice" data-value="strict" data-mult="1">
+            <span class="choice-name">Strict</span>
+            <span class="choice-meta">Exactly the &quot;against&quot; count</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Era -->
+      <section class="setup-card" id="eraCard">
+        <h2 class="card-title"><span class="card-eyebrow">02</span>Era</h2>
+        <p class="card-desc">Pick the period of history the resolution will be drawn from.</p>
+        <div class="choice-row" data-group="era">
+          <button class="choice is-active" data-value="any">
+            <span class="choice-name">Any Era</span>
+            <span class="choice-meta">1946 – 2020</span>
+          </button>
+          <button class="choice" data-value="cold-war">
+            <span class="choice-name">Cold War</span>
+            <span class="choice-meta">1946 – 1991</span>
+          </button>
+          <button class="choice" data-value="modern">
+            <span class="choice-name">Modern Era</span>
+            <span class="choice-meta">1992 – 2020</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Topic -->
+      <section class="setup-card" id="topicCard">
+        <h2 class="card-title"><span class="card-eyebrow">03</span>Topic</h2>
+        <p class="card-desc">Optionally focus on resolutions tagged with a specific issue.</p>
+        <div class="choice-row" data-group="topic">
+          <button class="choice is-active" data-value="any">
+            <span class="choice-name">Any Topic</span>
+          </button>
+          <button class="choice" data-value="Human rights">
+            <span class="choice-name">Human Rights</span>
+          </button>
+          <button class="choice" data-value="Palestinian conflict">
+            <span class="choice-name">Palestinian Conflict</span>
+          </button>
+          <button class="choice" data-value="Arms control and disarmament">
+            <span class="choice-name">Arms Control</span>
+          </button>
+          <button class="choice" data-value="Nuclear weapons and nuclear material">
+            <span class="choice-name">Nuclear Weapons</span>
+          </button>
+          <button class="choice" data-value="Colonialism">
+            <span class="choice-name">Colonialism</span>
+          </button>
+          <button class="choice" data-value="Economic development">
+            <span class="choice-name">Economic Development</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Hints -->
+      <section class="setup-card" id="hintsCard">
+        <h2 class="card-title"><span class="card-eyebrow">04</span>Hints</h2>
+        <p class="card-desc">Reveal background info on the votes against. More hints make it easier to track down the dissenters.</p>
+        <div class="choice-row choice-row-toggle" data-group="hints">
+          <button class="choice toggle" data-value="geography">
+            <span class="choice-name">Geography</span>
+            <span class="choice-meta">Region of each &quot;no&quot; vote</span>
+          </button>
+          <button class="choice toggle" data-value="religion">
+            <span class="choice-name">Religion</span>
+            <span class="choice-meta">Majority faith</span>
+          </button>
+          <button class="choice toggle" data-value="language">
+            <span class="choice-name">Language</span>
+            <span class="choice-meta">Primary language</span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <button class="btn-primary btn-start" id="startBtn">
+      <span>Begin Session</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+    <p class="setup-footnote" id="poolCount">Loading the archive…</p>
+  </div>
+</main>
+
+<!-- ============ GAME SCREEN ============ -->
+<main class="screen" id="gameScreen" hidden>
+
+  <!-- Resolution / ballot card -->
+  <aside class="ballot" id="ballot">
+    <div class="ballot-seal">UN</div>
+    <div class="ballot-head">
+      <span class="ballot-label">General Assembly Resolution</span>
+      <span class="ballot-id" id="resTitle">—</span>
+    </div>
+    <h2 class="ballot-name" id="resShort">Loading…</h2>
+    <p class="ballot-desc" id="resDescr"></p>
+    <div class="ballot-meta">
+      <div class="meta-item">
+        <span class="meta-label">Date</span>
+        <span class="meta-value" id="resDate">—</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Topic</span>
+        <span class="meta-value" id="resTopic">—</span>
+      </div>
+    </div>
+
+    <div class="tally" id="tally">
+      <div class="tally-row">
+        <span class="tally-icon tally-yes">+</span>
+        <span class="tally-label">In Favour</span>
+        <span class="tally-count" id="countYes">0</span>
+      </div>
+      <div class="tally-row">
+        <span class="tally-icon tally-abstain">×</span>
+        <span class="tally-label">Abstain</span>
+        <span class="tally-count" id="countAbstain">0</span>
+      </div>
+      <div class="tally-row">
+        <span class="tally-icon tally-no">−</span>
+        <span class="tally-label">Against</span>
+        <span class="tally-count" id="countNo">0 / 0</span>
+      </div>
+      <div class="tally-row">
+        <span class="tally-icon tally-absent">•</span>
+        <span class="tally-label">Not Present</span>
+        <span class="tally-count" id="countAbsent">0</span>
+      </div>
+    </div>
+    <div class="tally-bar" id="tallyBar"></div>
+
+    <div class="hints-panel" id="hintsPanel"></div>
+
+    <div class="ballot-status" id="ballotStatus" hidden></div>
+  </aside>
+
+  <!-- Map -->
+  <section class="map-stage">
+    <div class="hud">
+      <div class="hud-item hud-timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span id="timer">00:00</span>
+      </div>
+      <div class="hud-item hud-guesses">
+        <span class="hud-label">Guesses Left</span>
+        <span id="guessesLeft">0</span>
+      </div>
+      <div class="hud-spacer"></div>
+      <button class="hud-btn" id="zoomInBtn" title="Zoom in" aria-label="Zoom in">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
+      </button>
+      <button class="hud-btn" id="zoomOutBtn" title="Zoom out" aria-label="Zoom out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6"/></svg>
+      </button>
+      <button class="hud-btn" id="resetViewBtn" title="Reset view" aria-label="Reset view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5"/></svg>
+      </button>
+      <button class="hud-btn hud-quit" id="quitBtn" title="End session">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="map-viewport" id="mapViewport">
+      <svg id="mapSvg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="map-tooltip" id="mapTooltip" hidden></div>
+    </div>
+
+    <div class="guess-feed" id="guessFeed"></div>
+  </section>
+</main>
+
+<!-- ============ RESULTS OVERLAY ============ -->
+<div class="overlay" id="resultsOverlay" hidden>
+  <div class="results-card">
+    <div class="results-head">
+      <span class="results-eyebrow" id="resultsEyebrow">Session Complete</span>
+      <h2 class="results-title" id="resultsTitle">—</h2>
+    </div>
+    <div class="results-grid">
+      <div class="result-stat">
+        <span class="result-stat-value" id="resultAccuracy">0%</span>
+        <span class="result-stat-label">Accuracy</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-stat-value" id="resultFound">0 / 0</span>
+        <span class="result-stat-label">Dissenters Found</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-stat-value" id="resultTime">00:00</span>
+        <span class="result-stat-label">Time</span>
+      </div>
+      <div class="result-stat">
+        <span class="result-stat-value" id="resultGuesses">0</span>
+        <span class="result-stat-label">Guesses Used</span>
+      </div>
+    </div>
+    <div class="results-actions">
+      <button class="btn-secondary" id="reviewMapBtn">Review Map</button>
+      <button class="btn-primary" id="playAgainBtn">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="overlay" id="authOverlay" hidden>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab is-active" data-tab="login">Sign In</button>
+      <button class="auth-tab" data-tab="register">Create Account</button>
+    </div>
+    <form id="authForm" autocomplete="off">
+      <label class="field">
+        <span class="field-label">Username</span>
+        <input type="text" id="authUsername" maxlength="24" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span class="field-label">Password</span>
+        <input type="password" id="authPassword" maxlength="64" required autocomplete="current-password">
+      </label>
+      <p class="auth-error" id="authError" hidden></p>
+      <button type="submit" class="btn-primary btn-block" id="authSubmit">Sign In</button>
+    </form>
+    <button class="auth-close" id="authClose" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ============ STATS OVERLAY ============ -->
+<div class="overlay" id="statsOverlay" hidden>
+  <div class="stats-card">
+    <div class="stats-head">
+      <h2>Your Record</h2>
+      <button class="auth-close" id="statsClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="stats-body" id="statsBody">
+      <p class="stats-signed-out" id="statsSignedOut">Sign in to track your stats across sessions — accuracy, streaks, fastest times, and more.</p>
+      <div class="stats-content" id="statsContent" hidden></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script src="geo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
